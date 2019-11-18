@@ -4,7 +4,7 @@ import com.epam.coopaint.dao.DAOFactory;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.domain.ACL;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.domain.UserAction;
+import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
@@ -34,7 +34,7 @@ public class SecurityServiceImpl implements SecurityService {
         return acl;
     }
 
-    private boolean canAccess(ACL resourceACL, Set<String> actorGroups, UserAction action) {
+    private boolean canAccess(ACL resourceACL, Set<String> actorGroups, ResourceAction action) {
         boolean canAccess = false;
         for (var group : actorGroups) {
             if (resourceACL.getActions(group).contains(action)) {
@@ -46,7 +46,7 @@ public class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public boolean canAccess(String resource, UserAction action, User actor) throws ServiceException {
+    public boolean canAccess(String resource, ResourceAction action, User actor) throws ServiceException {
         try {
             ACL resourceACL = getACL(resource);
             ACL allACL = getACL(RESOURCE_ALL);

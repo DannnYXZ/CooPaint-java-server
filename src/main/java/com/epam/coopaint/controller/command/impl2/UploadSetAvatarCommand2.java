@@ -2,7 +2,7 @@ package com.epam.coopaint.controller.command.impl2;
 
 import com.epam.coopaint.controller.UploadType;
 import com.epam.coopaint.controller.command.Command2;
-import com.epam.coopaint.controller.command.CommandResult;
+import com.epam.coopaint.domain.CommandResult;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;

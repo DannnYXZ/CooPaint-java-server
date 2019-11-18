@@ -9,7 +9,6 @@ class SQLData {
     static final String COLUMN_AVATAR = "avatar";
     static final String COLUMN_LANG = "lang";
 
-    static final String COLUMN_ACL_RESOURCE = "resource";
     static final String COLUMN_ACL_GROUP = "group";
 
 }

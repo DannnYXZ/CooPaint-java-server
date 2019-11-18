@@ -2,7 +2,7 @@ package com.epam.coopaint.dao.impl;
 
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.domain.ACL;
-import com.epam.coopaint.domain.UserAction;
+import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.exception.ConnectionPoolException;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.pool.ConnectionPoolImpl;
@@ -35,7 +35,7 @@ public class SecurityDAOImpl implements SecurityDAO {
         ACL acl = new ACL();
         while (resultSet.next()) {
             String group = resultSet.getString(COLUMN_ACL_GROUP);
-            for (UserAction action : UserAction.values()) {
+            for (ResourceAction action : ResourceAction.values()) {
                 if (resultSet.getBoolean(action.name())) {
                     acl.addAction(group, action);
                 }

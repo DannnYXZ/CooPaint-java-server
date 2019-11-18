@@ -1,10 +1,10 @@
 package com.epam.coopaint.controller;
 
 import com.epam.coopaint.controller.command.Command2;
-import com.epam.coopaint.controller.command.CommandResult;
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.controller.command.impl2.*;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.domain.UserAction;
+import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
@@ -38,7 +38,7 @@ enum CommandDispatcher {
         Method method;
         String routePattern;
         String resourceUID;
-        UserAction action;
+        ResourceAction action;
         List<Integer> argumentIndices;
         Command2 command;
 
@@ -46,7 +46,7 @@ enum CommandDispatcher {
             argumentIndices = new ArrayList<>();
         }
 
-        CommandDescriptor(Method method, String routePattern, List<Integer> resourceIndices, UserAction action, Command2 command) {
+        CommandDescriptor(Method method, String routePattern, List<Integer> resourceIndices, ResourceAction action, Command2 command) {
             this.method = method;
             this.routePattern = routePattern;
             // this.resourceUID = resourceUID;
@@ -70,7 +70,7 @@ enum CommandDispatcher {
             return this;
         }
 
-        CommandDescriptor setActions(UserAction action) {
+        CommandDescriptor setActions(ResourceAction action) {
             this.action = action;
             return this;
         }
@@ -94,14 +94,14 @@ enum CommandDispatcher {
         commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-out").setCommand(new SignOutCommand2()));
         commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/lang-pack").setCommand(new LangPackCommand2()));
         commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/set-avatar").setCommand(new UploadSetAvatarCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/chat/({0})", UUID), List.of(0), UserAction.READ_CHAT, new ChatReadHistoryCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.POST, format("/chat/({0})", UUID), List.of(0), UserAction.UPDATE_CHAT, new ChatAcceptMessageCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/board/({0})", UUID), List.of(0), UserAction.READ_BOARD, new ChatAcceptMessageCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.PUT, format("/board/({0})", UUID), List.of(0), UserAction.UPDATE_BOARD, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/chat/({0})", UUID), List.of(0), ResourceAction.READ_CHAT, new ChatReadHistoryCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.POST, format("/chat/({0})", UUID), List.of(0), ResourceAction.UPDATE_CHAT, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/board/({0})", UUID), List.of(0), ResourceAction.READ_BOARD, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.PUT, format("/board/({0})", UUID), List.of(0), ResourceAction.UPDATE_BOARD, new ChatAcceptMessageCommand2()));
         commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern(".*").setCommand(new WrongRequestCommand2()));
     }
 
-    private boolean canAccess(List<String> resources, UserAction action, User user) throws ServiceException {
+    private boolean canAccess(List<String> resources, ResourceAction action, User user) throws ServiceException {
         SecurityService securityService = ServiceFactory.getInstance().getSecurityService();
         boolean canAccess = true;
         for (String resource : resources) {

@@ -1,5 +1,6 @@
 package com.epam.coopaint.controller.command;
 
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.service.WSChatService;
 

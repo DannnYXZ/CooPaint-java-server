@@ -1,7 +1,7 @@
 package com.epam.coopaint.controller.command.impl2;
 
 import com.epam.coopaint.controller.command.Command2;
-import com.epam.coopaint.controller.command.CommandResult;
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

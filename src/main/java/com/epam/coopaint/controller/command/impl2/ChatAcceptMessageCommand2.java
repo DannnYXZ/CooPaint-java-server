@@ -1,6 +1,6 @@
 package com.epam.coopaint.controller.command.impl2;
 
-import com.epam.coopaint.controller.command.CommandResult;
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.controller.command.WSCommand;
 import com.epam.coopaint.exception.CommandException;
 import com.fasterxml.jackson.core.JsonProcessingException;
