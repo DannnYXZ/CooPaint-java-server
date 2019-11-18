@@ -36,6 +36,7 @@ public class FileUploadController extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // state dependent uploader
+        // upload type controlled by ACL in dispatcher
         try (Writer out = response.getWriter()) {
             HttpSession session = request.getSession(false);
             if (session == null) {

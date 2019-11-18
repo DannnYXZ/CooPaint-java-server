@@ -17,9 +17,10 @@ public class ChatAcceptMessageCommand2 extends WSCommand {
             // add to chat
             JsonNode msg = new ObjectMapper().readTree(body);
             sessionHandler.addMessage(msg.path("message"));
-            return new CommandResult(body);
+            //return new CommandResult(body);
         } catch (JsonProcessingException e) {
             throw new CommandException(e);
         }
+        return null;
     }
 }

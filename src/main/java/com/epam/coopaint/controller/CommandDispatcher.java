@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.epam.coopaint.domain.ACLData.RESOURCE_ALL;
+import static com.epam.coopaint.domain.ACLData.RESOURCE_SITE;
+import static com.epam.coopaint.domain.ResourceAction.*;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static java.text.MessageFormat.format;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
@@ -70,7 +73,7 @@ enum CommandDispatcher {
             return this;
         }
 
-        CommandDescriptor setActions(ResourceAction action) {
+        CommandDescriptor setAction(ResourceAction action) {
             this.action = action;
             return this;
         }
@@ -88,25 +91,25 @@ enum CommandDispatcher {
 
 
     CommandDispatcher() {
-        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/auth").setCommand(new AuthCommand2()));
-        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-up").setCommand(new SignUpCommand2()));
-        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-in").setCommand(new SignInCommand2()));
-        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-out").setCommand(new SignOutCommand2()));
-        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/lang-pack").setCommand(new LangPackCommand2()));
-        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/set-avatar").setCommand(new UploadSetAvatarCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/chat/({0})", UUID), List.of(0), ResourceAction.READ_CHAT, new ChatReadHistoryCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.POST, format("/chat/({0})", UUID), List.of(0), ResourceAction.UPDATE_CHAT, new ChatAcceptMessageCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/board/({0})", UUID), List.of(0), ResourceAction.READ_BOARD, new ChatAcceptMessageCommand2()));
-        commandDescriptors.add(new CommandDescriptor(Method.PUT, format("/board/({0})", UUID), List.of(0), ResourceAction.UPDATE_BOARD, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/auth").setAction(READ_SITE).setCommand(new AuthCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-up").setAction(READ_SITE).setCommand(new SignUpCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-in").setAction(READ_SITE).setCommand(new SignInCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-out").setAction(READ_SITE).setCommand(new SignOutCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/lang-pack").setAction(READ_SITE).setCommand(new LangPackCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/set-avatar").setAction(UPLOAD_FILE).setCommand(new UploadSetAvatarCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/chat/({0})", UUID), List.of(0), READ_CHAT, new ChatReadHistoryCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.POST, format("/chat/({0})", UUID), List.of(0), UPDATE_CHAT, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/board/({0})", UUID), List.of(0), READ_BOARD, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.PUT, format("/board/({0})", UUID), List.of(0), UPDATE_BOARD, new ChatAcceptMessageCommand2()));
         commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern(".*").setCommand(new WrongRequestCommand2()));
     }
 
     private boolean canAccess(List<String> resources, ResourceAction action, User user) throws ServiceException {
         SecurityService securityService = ServiceFactory.getInstance().getSecurityService();
-        boolean canAccess = true;
+        boolean canAccess = false;
         for (String resource : resources) {
-            if (!securityService.canAccess(resource, action, user)) {
-                canAccess = false;
+            if (securityService.canAccess(resource, action, user)) {
+                canAccess = true;
                 break;
             }
         }
@@ -129,6 +132,8 @@ enum CommandDispatcher {
         List<String> props = StringUtil.parseGroups(url, matchedDescriptor.routePattern);
         User user = (User) httpSession.getAttribute(SESSION_USER);
         List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
+        urlResources.add(RESOURCE_ALL);
+        urlResources.add(RESOURCE_SITE);
         try {
             CommandResult result;
             if (canAccess(urlResources, matchedDescriptor.action, user)) {

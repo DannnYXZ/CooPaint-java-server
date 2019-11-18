@@ -1,6 +1,7 @@
 package com.epam.coopaint.domain;
 
 public enum ResourceAction {
+    READ_SITE,
     READ_CHAT,
     UPDATE_CHAT,
     READ_BOARD,

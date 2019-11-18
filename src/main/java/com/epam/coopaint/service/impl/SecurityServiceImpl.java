@@ -3,8 +3,8 @@ package com.epam.coopaint.service.impl;
 import com.epam.coopaint.dao.DAOFactory;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.domain.ACL;
-import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.ResourceAction;
+import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
-import static com.epam.coopaint.domain.ACLData.RESOURCE_ALL;
+import static com.epam.coopaint.service.impl.SecurityData.ACL_USE_CACHING;
 
 public class SecurityServiceImpl implements SecurityService {
     // TODO: synchronize
@@ -26,12 +26,17 @@ public class SecurityServiceImpl implements SecurityService {
 
     private ACL getACL(String resource) throws DAOException {
         SecurityDAO securityDAO = DAOFactory.getInstance().getSecurityDAO();
-        ACL acl = this.cacheACL.get(resource);
-        if (acl == null) {
-            acl = securityDAO.getACL(resource);
-            cacheACL.put(resource, acl);
+        if (ACL_USE_CACHING) {
+            ACL acl = this.cacheACL.get(resource);
+            if (acl == null) {
+                acl = securityDAO.getACL(resource);
+                cacheACL.put(resource, acl);
+            }
+            return acl;
+        } else {
+            ACL acl = securityDAO.getACL(resource);
+            return acl;
         }
-        return acl;
     }
 
     private boolean canAccess(ACL resourceACL, Set<String> actorGroups, ResourceAction action) {
@@ -49,14 +54,11 @@ public class SecurityServiceImpl implements SecurityService {
     public boolean canAccess(String resource, ResourceAction action, User actor) throws ServiceException {
         try {
             ACL resourceACL = getACL(resource);
-            ACL allACL = getACL(RESOURCE_ALL);
             // determine common groups
             Set<String> groupsIntersection = new HashSet<>(actor.getGroups());
             groupsIntersection.retainAll(resourceACL.getGroups());
             groupsIntersection.add(GROUP_ALL);
-
             boolean canAccess = canAccess(resourceACL, groupsIntersection, action);
-            canAccess |= canAccess(allACL, groupsIntersection, action);
             return canAccess;
         } catch (DAOException e) {
             throw new ServiceException(e);
