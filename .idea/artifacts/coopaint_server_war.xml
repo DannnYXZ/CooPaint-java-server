@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="war" build-on-make="true" name="coopaint-server:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/coopaint_server_war</output-path>
+    <root id="archive" name="coopaint-server_war.war">
+      <element id="artifact" artifact-name="coopaint-server:war exploded" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: org.jboss:jandex:2.0.3.Final" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>

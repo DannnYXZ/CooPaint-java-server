@@ -1,0 +1,33 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" build-on-make="true" name="coopaint-server:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/coopaint_server_war_exploded</output-path>
+    <root id="root">
+      <element id="directory" name="META-INF">
+        <element id="dir-copy" path="$PROJECT_DIR$/web/META-INF" />
+      </element>
+      <element id="directory" name="WEB-INF">
+        <element id="dir-copy" path="$PROJECT_DIR$/web/WEB-INF" />
+        <element id="directory" name="classes">
+          <element id="dir-copy" path="$PROJECT_DIR$/target/classes" />
+          <element id="file-copy" path="$PROJECT_DIR$/web/WEB-INF/beans.xml" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.10.0" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.10.0" />
+          <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.0" />
+          <element id="library" level="project" name="Maven: com.google.protobuf:protobuf-java:3.6.1" />
+          <element id="library" level="project" name="Maven: javax.activation:activation:1.1" />
+          <element id="library" level="project" name="Maven: javax.mail:mail:1.4" />
+          <element id="library" level="project" name="Maven: mysql:mysql-connector-java:8.0.18" />
+          <element id="library" level="project" name="Maven: org.apache.logging.log4j:log4j-api:2.11.2" />
+          <element id="library" level="project" name="Maven: org.apache.logging.log4j:log4j-core:2.11.2" />
+          <element id="library" level="project" name="Maven: org.jboss.weld.servlet:weld-servlet:2.4.8.Final" />
+          <element id="library" level="project" name="Maven: org.jboss:jandex:1.1.0.Final" />
+          <element id="file-copy" path="$MAVEN_REPOSITORY$/org/jboss/jandex/2.0.3.Final/jandex-2.0.3.Final.jar" />
+        </element>
+      </element>
+      <element id="dir-copy" path="$PROJECT_DIR$/web" />
+      <element id="javaee-facet-resources" facet="coopaint-server/web/Web" />
+    </root>
+  </artifact>
+</component>
