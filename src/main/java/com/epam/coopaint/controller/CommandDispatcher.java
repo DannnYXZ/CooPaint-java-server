@@ -1,0 +1,151 @@
+package com.epam.coopaint.controller;
+
+import com.epam.coopaint.controller.command.*;
+import com.epam.coopaint.controller.command.impl2.*;
+import com.epam.coopaint.domain.User;
+import com.epam.coopaint.domain.UserAction;
+import com.epam.coopaint.exception.ServiceException;
+import com.epam.coopaint.service.SecurityService;
+import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.util.StringUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static java.text.MessageFormat.format;
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+
+enum CommandDispatcher {
+    INSTANCE;
+    private static Logger logger = LogManager.getLogger();
+
+    public enum Method {POST, DELETE, PUT, GET, WS}
+
+
+    private static final String UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
+
+    private static class CommandDescriptor {
+        Method method;
+        String routePattern;
+        String resourceUID;
+        UserAction action;
+        List<Integer> argumentIndices;
+        Command2 command;
+
+        CommandDescriptor() {
+            argumentIndices = new ArrayList<>();
+        }
+
+        CommandDescriptor(Method method, String routePattern, List<Integer> resourceIndices, UserAction action, Command2 command) {
+            this.method = method;
+            this.routePattern = routePattern;
+            // this.resourceUID = resourceUID;
+            this.action = action;
+            this.argumentIndices = resourceIndices;
+            this.command = command;
+        }
+
+        public CommandDescriptor setMethod(Method method) {
+            this.method = method;
+            return this;
+        }
+
+        public CommandDescriptor setRoutePattern(String routePattern) {
+            this.routePattern = routePattern;
+            return this;
+        }
+
+        public CommandDescriptor setResourceUID(String resourceUID) {
+            this.resourceUID = resourceUID;
+            return this;
+        }
+
+        public CommandDescriptor setActions(UserAction action) {
+            this.action = action;
+            return this;
+        }
+
+        public CommandDescriptor setArgumentIndices(List<Integer> argumentIndices) {
+            this.argumentIndices = argumentIndices;
+            return this;
+        }
+
+        public CommandDescriptor setCommand(Command2 command) {
+            this.command = command;
+            return this;
+        }
+    }
+
+    private final List<CommandDescriptor> commandDescriptors = new ArrayList<>();
+
+    CommandDispatcher() {
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/auth").setCommand(new AuthCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-up").setCommand(new SignUpCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-in").setCommand(new SignInCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/sign-out").setCommand(new SignOutCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/lang-pack").setCommand(new LangPackCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/set-avatar").setCommand(new UploadSetAvatarCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/chat/({0})", UUID), List.of(0), UserAction.READ_CHAT, new ChatReadHistoryCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.POST, format("/chat/({0})", UUID), List.of(0), UserAction.UPDATE_CHAT, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.GET, format("/board/({0})", UUID), List.of(0), UserAction.READ_BOARD, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor(Method.PUT, format("/board/({0})", UUID), List.of(0), UserAction.UPDATE_BOARD, new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern(".*").setCommand(new WrongRequestCommand2()));
+    }
+
+    private boolean canAccess(List<String> resources, UserAction action, User user) throws ServiceException {
+        SecurityService securityService = ServiceFactory.getInstance().getSecurityService();
+        boolean canAccess = true;
+        for (String resource : resources) {
+            if (!securityService.canAccess(resource, action, user)) {
+                canAccess = false;
+                break;
+            }
+        }
+        return canAccess;
+    }
+
+    private CommandDescriptor getMatchingDescriptor(Method method, String url) {
+        CommandDescriptor matchedDescriptor = new CommandDescriptor();
+        for (CommandDescriptor descriptor : commandDescriptors) {
+            if (descriptor.method.equals(method) && url.matches(descriptor.routePattern)) {
+                matchedDescriptor = descriptor;
+                break;
+            }
+        }
+        return matchedDescriptor;
+    }
+
+    public CommandResult dispatch(Method method, String url, String req, HttpSession httpSession) {
+        CommandDescriptor matchedDescriptor = getMatchingDescriptor(method, url);
+        List<String> props = StringUtil.parseGroups(url, matchedDescriptor.routePattern);
+        User user = (User) httpSession.getAttribute(SESSION_USER);
+        List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
+        CommandResult result = new CommandResult();
+        try {
+            if (canAccess(urlResources, matchedDescriptor.action, user)) {
+                result = matchedDescriptor.command.execute(props, req, httpSession);
+            } else {
+                result.setStatusCode(HttpServletResponse.SC_FORBIDDEN);
+                return result;
+            }
+        } catch (ServiceException e) {
+            result.setStatusCode(SC_BAD_REQUEST);
+            result.setBody(e.getMessage());
+            return result;
+        } catch (RuntimeException e) {
+            result.setStatusCode(SC_INTERNAL_SERVER_ERROR);
+            result.setBody("Internal ERROR ಠ╭╮ಠ.");
+            logger.error(e);
+            return result;
+        }
+        return result;
+    }
+}

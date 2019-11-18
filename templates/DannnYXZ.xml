@@ -1,0 +1,7 @@
+<templateSet group="DannnYXZ">
+  <template name="rl" value="private static Logger logger = LogManager.getLogger();" description="" toReformat="false" toShortenFQNames="true">
+    <context>
+      <option name="JAVA_CODE" value="true" />
+    </context>
+  </template>
+</templateSet>
