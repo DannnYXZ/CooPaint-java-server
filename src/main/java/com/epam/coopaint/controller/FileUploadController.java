@@ -56,7 +56,7 @@ public class FileUploadController extends HttpServlet {
                         }
                     } catch (ServiceException | RuntimeException e2) {
                         logger.error(e2);
-                        var error = new ErrorInfo(SC_INTERNAL_SERVER_ERROR, "");
+                        var error = new ErrorInfo(SC_INTERNAL_SERVER_ERROR, "ಠ╭╮ಠ");
                         response.setStatus(SC_INTERNAL_SERVER_ERROR);
                         out.write(new ObjectMapper().writeValueAsString(error));
                     }

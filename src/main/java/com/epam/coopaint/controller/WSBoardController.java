@@ -16,6 +16,7 @@ import javax.websocket.server.ServerEndpoint;
 @ApplicationScoped
 @ServerEndpoint(value = "/board", configurator = CDIConfigurator.class)
 public class WSBoardController {
+    /*
     private static Logger logger = LogManager.getLogger();
 
     @Inject
@@ -60,4 +61,5 @@ public class WSBoardController {
             e.printStackTrace();
         }
     }
+    */
 }

@@ -1,9 +1,7 @@
 package com.epam.coopaint.controller;
 
 import com.epam.coopaint.controller.command.CommandResult;
-import com.epam.coopaint.controller.command.Command;
 import com.epam.coopaint.pool.ConnectionPoolImpl;
-import com.epam.coopaint.util.StringUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,15 +17,30 @@ import java.util.stream.Collectors;
 @WebServlet(urlPatterns = {"/*"})
 public class FrontController extends HttpServlet {
     private static Logger logger = LogManager.getLogger();
-    private CommandProvider commandProvider = new CommandProvider();
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        String rawCommandName = request.getPathInfo();
-        Command command = commandProvider.getCommand(StringUtil.toEnumString(rawCommandName));
+        dispatch(CommandDispatcher.Method.POST, request, response);
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
+        dispatch(CommandDispatcher.Method.GET, request, response);
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) {
+        dispatch(CommandDispatcher.Method.PUT, request, response);
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
+        dispatch(CommandDispatcher.Method.DELETE, request, response);
+    }
+
+    private void dispatch(CommandDispatcher.Method method, HttpServletRequest request, HttpServletResponse response) {
         try {
             String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
             String url = request.getPathInfo();
-            CommandResult result = CommandDispatcher.INSTANCE.dispatch(CommandDispatcher.Method.POST, url, body, request.getSession(false));
+            CommandResult result = CommandDispatcher.INSTANCE.dispatch(method, url, body, request.getSession(false));
             response.setStatus(result.getStatusCode());
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");
@@ -37,20 +50,6 @@ public class FrontController extends HttpServlet {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String path = request.getPathInfo();
-    }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-    }
-
-    @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
     }
 
     @Override
