@@ -16,8 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 
-import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
-import static com.epam.coopaint.domain.ACLData.GUEST_NAME_DEFAULT;
+import static com.epam.coopaint.domain.ACLData.*;
 import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
 
 public class UserServiceImpl implements UserService {
@@ -31,6 +30,7 @@ public class UserServiceImpl implements UserService {
         // TODO: validate email n password
         try {
             User user = userDAO.signIn(bundle);
+            user.getGroups().add(GROUP_USER); // TODO: load groups from db
             return user;
         } catch (DAOException e) {
             throw new ServiceException("Failed to sign in.", e);
@@ -43,7 +43,7 @@ public class UserServiceImpl implements UserService {
         guest.setName(GUEST_NAME_DEFAULT);
         guest.setLang(LangPack.EN);
         guest.setAuth(false);
-        guest.getGroups().add(GROUP_GUEST);
+        guest.getGroups().add(GROUP_GUEST); // TODO: load groups from db
         return guest;
     }
 
@@ -55,17 +55,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public User signUp(SignInUpBundle signUpBundle) throws ServiceException {
         // validation
-        if (UserValidator.isValid(signUpBundle)) {
+        if (UserValidator.INSTANCE.isValid(signUpBundle)) {
             UserDAO userDAO = DAOFactory.getInstance().getUserDAO();
             try {
                 userDAO.signUp(signUpBundle);
                 User user = userDAO.getUser(signUpBundle.getEmail());
+                user.getGroups().add(GROUP_USER);
                 return user;
             } catch (DAOException e) {
                 throw new ServiceException("Failed to signUp user.", e);
             }
         } else {
-            throw new ServiceException("Invalid user data.");
+            throw new ServiceException("Invalid user data."); // TODO: reason - ake validator.getReason()
         }
     }
 
@@ -79,7 +80,7 @@ public class UserServiceImpl implements UserService {
             String previousAvatarName = user.getAvatar();
             userDAO.updateAvatar(user.getId(), newAvatarFileName);
             // FIXME: service access -> no move to DAO level
-            if (previousAvatarName != null) {
+            if (!previousAvatarName.isEmpty()) {
                 FileSystemService fsService = ServiceFactory.getInstance().getFileSystemService(); // FIXME: DAO class
                 fsService.remove(Paths.get(STORAGE_PATH_AVATAR, previousAvatarName).toString());
             }

@@ -1,18 +1,21 @@
 package com.epam.coopaint.validator;
 
 import com.epam.coopaint.domain.SignInUpBundle;
+import org.apache.commons.validator.routines.EmailValidator;
 
-public class UserValidator {
-    private static final String REGEX_PASSWORD = ".*";
-    private static final String REGEX_EMAIL = ".*";
+public enum UserValidator {
+    INSTANCE;
+    private static final int PASSWORD_MIN_LEN = 3;
+    private static final int PASSWORD_MAX_LEN = 4096;
 
-    public static boolean isValid(SignInUpBundle bundle) {
+    public boolean isValid(SignInUpBundle bundle) {
         String email = bundle.getEmail();
         String password = bundle.getPassword();
-        if (!(email != null && email.matches(REGEX_EMAIL))) {
+        if (!(email != null && EmailValidator.getInstance().isValid(email))) {
             return false;
         }
-        if (!(password != null && password.matches(REGEX_PASSWORD))) {
+        PasswordValidator passwordValidator = PasswordValidator.INSTANCE.buildValidator(true, true, true, PASSWORD_MIN_LEN, PASSWORD_MAX_LEN);
+        if (!(password != null && passwordValidator.validatePassword(password))) {
             return false;
         }
         return true;

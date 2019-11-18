@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.epam.coopaint.domain.ACLData.RESOURCE_ALL;
-import static com.epam.coopaint.domain.ACLData.RESOURCE_SITE;
 import static com.epam.coopaint.domain.ResourceAction.*;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static java.text.MessageFormat.format;
@@ -133,7 +132,6 @@ enum CommandDispatcher {
         User user = (User) httpSession.getAttribute(SESSION_USER);
         List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
         urlResources.add(RESOURCE_ALL);
-        urlResources.add(RESOURCE_SITE);
         try {
             CommandResult result;
             if (canAccess(urlResources, matchedDescriptor.action, user)) {

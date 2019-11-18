@@ -103,7 +103,7 @@ public class SQLUserDAO implements UserDAO {
                 String validationLink = Encryptor.getInstance().generateRandomHash(VALIDATION_LINK_LENGTH);
                 //sender.sendMail(validationLink, bundle.getEmail()); // TODO: long hash link + session status
             } else {
-                throw new DAOException("Failed to execute user registration.");
+                throw new DAOException("Database error.");
             }
         } catch (ConnectionPoolException e) {
             throw new DAOException("Failed to acquire database connection.", e);
