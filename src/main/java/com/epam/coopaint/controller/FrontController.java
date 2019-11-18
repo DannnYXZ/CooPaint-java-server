@@ -47,8 +47,8 @@ public class FrontController extends HttpServlet {
             Writer out = response.getWriter();
             out.write(result.getBody());
             out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | RuntimeException e) {
+            logger.error(e);
         }
     }
 

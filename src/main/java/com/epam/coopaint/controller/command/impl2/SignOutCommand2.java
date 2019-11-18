@@ -17,10 +17,8 @@ public class SignOutCommand2 implements Command2 {
 
     @Override
     public CommandResult execute(List<String> props, String body, HttpSession session) {
-        if (session != null) {
-            logger.info(((User) session.getAttribute(SESSION_USER)).getName() + " logged out.");
-            session.invalidate();
-        }
+        logger.info(((User) session.getAttribute(SESSION_USER)).getName() + " logged out.");
+        session.invalidate(); // user will be guest on next action
         return new CommandResult();
     }
 }

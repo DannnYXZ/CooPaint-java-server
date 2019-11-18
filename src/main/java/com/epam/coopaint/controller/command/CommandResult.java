@@ -11,23 +11,21 @@ public class CommandResult {
     public CommandResult() {
     }
 
-    public CommandResult(String body) {
-        this.body = body;
-    }
-
     public int getStatusCode() {
         return statusCode;
     }
 
-    public void setStatusCode(int statusCode) {
+    public CommandResult setCode(int statusCode) {
         this.statusCode = statusCode;
+        return this;
     }
 
     public String getBody() {
         return body;
     }
 
-    public void setBody(String body) {
+    public CommandResult setBody(String body) {
         this.body = body;
+        return this;
     }
 }

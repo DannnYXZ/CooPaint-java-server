@@ -25,10 +25,10 @@ public class SecurityServiceImpl implements SecurityService {
     private ACL getACL(String resource) throws DAOException {
         SecurityDAO securityDAO = DAOFactory.getInstance().getSecurityDAO();
         ACL acl = this.cacheACL.get(resource);
-        //if (acl == null) {
+        if (acl == null) {
             acl = securityDAO.getACL(resource);
             cacheACL.put(resource, acl);
-        //}
+        }
         return acl;
     }
 

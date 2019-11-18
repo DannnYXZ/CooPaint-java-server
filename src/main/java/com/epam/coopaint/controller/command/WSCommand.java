@@ -1,5 +1,6 @@
 package com.epam.coopaint.controller.command;
 
+import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.service.WSChatService;
 
 import javax.enterprise.inject.spi.CDI;
@@ -16,7 +17,7 @@ public abstract class WSCommand implements Command2 {
     }
 
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) {
+    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
         return null;
     }
 }

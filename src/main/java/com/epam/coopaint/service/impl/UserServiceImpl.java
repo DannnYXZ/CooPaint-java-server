@@ -16,8 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 
-import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
-import static com.epam.coopaint.domain.ACLData.GUEST_NAME_DEFAULT;
+import static com.epam.coopaint.domain.ACLData.*;
 import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
 
 public class UserServiceImpl implements UserService {

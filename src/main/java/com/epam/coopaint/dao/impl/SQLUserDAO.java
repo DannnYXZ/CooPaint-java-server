@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
+import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
 
 public class SQLUserDAO implements UserDAO {
     private static Logger logger = LogManager.getLogger();
@@ -101,7 +102,7 @@ public class SQLUserDAO implements UserDAO {
                 logger.info("Registered user: " + bundle.getEmail());
                 MailSender sender = MailSender.getInstance();
                 String validationLink = Encryptor.getInstance().generateRandomHash(VALIDATION_LINK_LENGTH);
-                sender.sendMail(validationLink, bundle.getEmail()); // TODO: long hash link + session status
+                //sender.sendMail(validationLink, bundle.getEmail()); // TODO: long hash link + session status
             } else {
                 throw new DAOException("Failed to execute user registration.");
             }

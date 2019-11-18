@@ -4,6 +4,7 @@ import com.epam.coopaint.controller.command.*;
 import com.epam.coopaint.controller.command.impl2.*;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.UserAction;
+import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
 import com.epam.coopaint.service.ServiceFactory;
@@ -27,8 +28,7 @@ enum CommandDispatcher {
     INSTANCE;
     private static Logger logger = LogManager.getLogger();
 
-    public enum Method {POST, DELETE, PUT, GET, WS}
-
+    public enum Method {POST, DELETE, PUT, GET}
 
     private static final String UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
 
@@ -53,32 +53,32 @@ enum CommandDispatcher {
             this.command = command;
         }
 
-        public CommandDescriptor setMethod(Method method) {
+        CommandDescriptor setMethod(Method method) {
             this.method = method;
             return this;
         }
 
-        public CommandDescriptor setRoutePattern(String routePattern) {
+        CommandDescriptor setRoutePattern(String routePattern) {
             this.routePattern = routePattern;
             return this;
         }
 
-        public CommandDescriptor setResourceUID(String resourceUID) {
+        CommandDescriptor setResourceUID(String resourceUID) {
             this.resourceUID = resourceUID;
             return this;
         }
 
-        public CommandDescriptor setActions(UserAction action) {
+        CommandDescriptor setActions(UserAction action) {
             this.action = action;
             return this;
         }
 
-        public CommandDescriptor setArgumentIndices(List<Integer> argumentIndices) {
+        CommandDescriptor setArgumentIndices(List<Integer> argumentIndices) {
             this.argumentIndices = argumentIndices;
             return this;
         }
 
-        public CommandDescriptor setCommand(Command2 command) {
+        CommandDescriptor setCommand(Command2 command) {
             this.command = command;
             return this;
         }
@@ -133,18 +133,15 @@ enum CommandDispatcher {
             if (canAccess(urlResources, matchedDescriptor.action, user)) {
                 result = matchedDescriptor.command.execute(props, req, httpSession);
             } else {
-                result.setStatusCode(HttpServletResponse.SC_FORBIDDEN);
+                result.setCode(HttpServletResponse.SC_FORBIDDEN);
                 return result;
             }
-        } catch (ServiceException e) {
-            result.setStatusCode(SC_BAD_REQUEST);
-            result.setBody(e.getMessage());
-            return result;
-        } catch (RuntimeException e) {
-            result.setStatusCode(SC_INTERNAL_SERVER_ERROR);
-            result.setBody("Internal ERROR ಠ╭╮ಠ.");
+        } catch (ServiceException | CommandException e) {
             logger.error(e);
-            return result;
+            return new CommandResult().setCode(SC_BAD_REQUEST).setBody(e.getMessage());
+        } catch (RuntimeException e) {
+            logger.fatal(e);
+            return new CommandResult().setCode(SC_INTERNAL_SERVER_ERROR).setBody("Internal ERROR ಠ╭╮ಠ.");
         }
         return result;
     }

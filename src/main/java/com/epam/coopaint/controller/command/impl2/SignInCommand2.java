@@ -5,6 +5,7 @@ import com.epam.coopaint.controller.command.Command2;
 import com.epam.coopaint.domain.ErrorInfo;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
+import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.ServiceFactory;
 import com.epam.coopaint.service.UserService;
@@ -25,29 +26,26 @@ public class SignInCommand2 implements Command2 {
     private static Logger logger = LogManager.getLogger();
 
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) {
-        CommandResult out = new CommandResult();
+    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+        var mapper = new ObjectMapper();
+        UserService userService = ServiceFactory.getInstance().getUserService();
         try {
-            UserService userService = ServiceFactory.getInstance().getUserService();
-            ObjectMapper mapper = new ObjectMapper();
             try {
                 SignInUpBundle signInUpBundle = mapper.readValue(body, SignInUpBundle.class);
                 User user = userService.singIn(signInUpBundle);
-                if (user.getAvatar() != null) {
+                if (!user.getAvatar().isEmpty()) {
                     user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
                 }
                 String jsonUser = mapper.writeValueAsString(user);
                 session.setAttribute(SESSION_USER, user);
-                out.setBody(jsonUser);
+                return new CommandResult().setBody(jsonUser);
             } catch (ServiceException e) {
                 var error = new ErrorInfo(SC_NOT_FOUND, "sign.in.error.no.such");
-                out.setStatusCode(SC_NOT_FOUND);
-                out.setBody(mapper.writeValueAsString(error));
                 logger.error("Not registered user tried to sign in.");
+                return new CommandResult().setCode(SC_NOT_FOUND).setBody(mapper.writeValueAsString(error));
             }
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new CommandException(e);
         }
-        return out;
     }
 }

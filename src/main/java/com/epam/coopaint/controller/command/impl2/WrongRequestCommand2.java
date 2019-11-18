@@ -10,8 +10,8 @@ import java.util.List;
 public class WrongRequestCommand2 implements Command2 {
     @Override
     public CommandResult execute(List<String> props, String body, HttpSession session) {
-        CommandResult out = new CommandResult();
-        out.setStatusCode(HttpServletResponse.SC_BAD_REQUEST);
+        var out = new CommandResult();
+        out.setCode(HttpServletResponse.SC_BAD_REQUEST);
         return out;
     }
 }
