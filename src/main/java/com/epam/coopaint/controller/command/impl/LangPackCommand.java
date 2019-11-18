@@ -11,7 +11,8 @@ import org.apache.logging.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.*;
+import java.io.IOException;
+import java.io.Writer;
 
 public class LangPackCommand implements Command {
     private static Logger logger = LogManager.getLogger();

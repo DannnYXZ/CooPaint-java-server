@@ -1,13 +1,12 @@
 package com.epam.coopaint.controller.command.impl2;
 
-import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.domain.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpSession;
-
 import java.util.List;
 
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;

@@ -1,14 +1,14 @@
 package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.pool.ConnectionPoolImpl;
+import com.epam.coopaint.exception.ConnectionPoolException;
 import com.epam.coopaint.exception.DAOException;
+import com.epam.coopaint.pool.ConnectionPoolImpl;
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
 import com.epam.coopaint.util.MailSender;
-import com.epam.coopaint.dao.UserDAO;
-import com.epam.coopaint.exception.ConnectionPoolException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
-import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
 
 public class SQLUserDAO implements UserDAO {
     private static Logger logger = LogManager.getLogger();

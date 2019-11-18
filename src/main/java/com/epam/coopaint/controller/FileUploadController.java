@@ -1,11 +1,11 @@
 package com.epam.coopaint.controller;
 
-import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.FileSystemService;
-import com.epam.coopaint.service.UserService;
-import com.epam.coopaint.service.ServiceFactory;
 import com.epam.coopaint.domain.ErrorInfo;
 import com.epam.coopaint.domain.User;
+import com.epam.coopaint.exception.ServiceException;
+import com.epam.coopaint.service.FileSystemService;
+import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,8 +19,10 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.nio.file.Paths;
 
-import static com.epam.coopaint.domain.LocationData.*;
-import static com.epam.coopaint.domain.SessionAttribute.*;
+import static com.epam.coopaint.domain.LocationData.SERVE_PATH_AVATAR;
+import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
+import static com.epam.coopaint.domain.SessionAttribute.SESSION_UPLOAD_TYPE;
+import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
@@ -42,7 +44,6 @@ public class FileUploadController extends HttpServlet {
                 var uploadType = (UploadType) session.getAttribute(SESSION_UPLOAD_TYPE);
                 for (Part part : request.getParts()) {
                     try (InputStream in = part.getInputStream()) {
-                        String fileName = part.getSubmittedFileName();
                         FileSystemService fileService = ServiceFactory.getInstance().getFileSystemService();
                         if (uploadType == UploadType.AVATAR) {
                             String newAvatarName = fileService.save(in, STORAGE_PATH_AVATAR);

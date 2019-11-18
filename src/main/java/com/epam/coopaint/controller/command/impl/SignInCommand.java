@@ -1,28 +1,11 @@
 package com.epam.coopaint.controller.command.impl;
 
-import com.epam.coopaint.domain.ErrorInfo;
-import com.epam.coopaint.domain.SignInUpBundle;
-import com.epam.coopaint.domain.User;
 import com.epam.coopaint.controller.command.Command;
-import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.UserService;
-import com.epam.coopaint.service.ServiceFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import static com.epam.coopaint.domain.LocationData.SERVE_PATH_AVATAR;
-import static javax.servlet.http.HttpServletResponse.*;
-
-import javax.servlet.http.HttpSession;
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.file.Paths;
-
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
 public class SignInCommand implements Command {
     private static Logger logger = LogManager.getLogger();

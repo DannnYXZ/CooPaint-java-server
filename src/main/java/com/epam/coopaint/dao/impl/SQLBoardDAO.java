@@ -1,13 +1,9 @@
 package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.BoardDAO;
 import com.epam.coopaint.domain.Board;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.dao.BoardDAO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 public class SQLBoardDAO implements BoardDAO {

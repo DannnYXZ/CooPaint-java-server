@@ -1,7 +1,7 @@
 package com.epam.coopaint.controller.command.impl2;
 
-import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.CommandException;
@@ -10,10 +10,7 @@ import com.epam.coopaint.service.ServiceFactory;
 import com.epam.coopaint.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 

@@ -1,14 +1,14 @@
 package com.epam.coopaint.service.impl;
 
+import com.epam.coopaint.dao.DAOFactory;
+import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.exception.DAOException;
-import com.epam.coopaint.dao.DAOFactory;
-import com.epam.coopaint.service.FileSystemService;
-import com.epam.coopaint.service.UserService;
 import com.epam.coopaint.exception.ServiceException;
+import com.epam.coopaint.service.FileSystemService;
 import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.UserService;
 import com.epam.coopaint.util.LangPack;
 import com.epam.coopaint.validator.UserValidator;
 import org.apache.logging.log4j.LogManager;
@@ -16,7 +16,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
 
-import static com.epam.coopaint.domain.ACLData.*;
+import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
+import static com.epam.coopaint.domain.ACLData.GUEST_NAME_DEFAULT;
 import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
 
 public class UserServiceImpl implements UserService {

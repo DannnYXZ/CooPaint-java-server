@@ -1,6 +1,7 @@
 package com.epam.coopaint.controller;
 
-import com.epam.coopaint.controller.command.*;
+import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.controller.command.impl2.*;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.UserAction;
@@ -14,23 +15,24 @@ import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static java.text.MessageFormat.format;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 
 enum CommandDispatcher {
     INSTANCE;
-    private static Logger logger = LogManager.getLogger();
 
     public enum Method {POST, DELETE, PUT, GET}
 
+    private static Logger logger = LogManager.getLogger();
     private static final String UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
+    private final List<CommandDescriptor> commandDescriptors = new ArrayList<>();
 
     private static class CommandDescriptor {
         Method method;
@@ -84,7 +86,6 @@ enum CommandDispatcher {
         }
     }
 
-    private final List<CommandDescriptor> commandDescriptors = new ArrayList<>();
 
     CommandDispatcher() {
         commandDescriptors.add(new CommandDescriptor().setMethod(Method.POST).setRoutePattern("/auth").setCommand(new AuthCommand2()));
@@ -128,14 +129,14 @@ enum CommandDispatcher {
         List<String> props = StringUtil.parseGroups(url, matchedDescriptor.routePattern);
         User user = (User) httpSession.getAttribute(SESSION_USER);
         List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
-        CommandResult result = new CommandResult();
         try {
+            CommandResult result;
             if (canAccess(urlResources, matchedDescriptor.action, user)) {
                 result = matchedDescriptor.command.execute(props, req, httpSession);
             } else {
-                result.setCode(HttpServletResponse.SC_FORBIDDEN);
-                return result;
+                result = new CommandResult().setCode(HttpServletResponse.SC_FORBIDDEN);
             }
+            return result;
         } catch (ServiceException | CommandException e) {
             logger.error(e);
             return new CommandResult().setCode(SC_BAD_REQUEST).setBody(e.getMessage());
@@ -143,6 +144,5 @@ enum CommandDispatcher {
             logger.fatal(e);
             return new CommandResult().setCode(SC_INTERNAL_SERVER_ERROR).setBody("Internal ERROR ಠ╭╮ಠ.");
         }
-        return result;
     }
 }

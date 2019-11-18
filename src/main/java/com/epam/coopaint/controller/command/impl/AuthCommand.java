@@ -1,7 +1,7 @@
 package com.epam.coopaint.controller.command.impl;
 
-import com.epam.coopaint.domain.User;
 import com.epam.coopaint.controller.command.Command;
+import com.epam.coopaint.domain.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,7 +12,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.Writer;
 
-import static com.epam.coopaint.domain.SessionAttribute.*;
+import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 public class AuthCommand implements Command {

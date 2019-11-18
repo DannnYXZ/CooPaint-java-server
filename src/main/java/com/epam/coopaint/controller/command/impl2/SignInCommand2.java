@@ -1,7 +1,7 @@
 package com.epam.coopaint.controller.command.impl2;
 
-import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.controller.command.CommandResult;
 import com.epam.coopaint.domain.ErrorInfo;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;

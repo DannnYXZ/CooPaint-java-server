@@ -11,7 +11,9 @@ import com.epam.coopaint.service.SecurityService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.epam.coopaint.domain.ACLData.GROUP_ALL;

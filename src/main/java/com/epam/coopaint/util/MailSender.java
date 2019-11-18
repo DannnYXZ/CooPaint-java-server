@@ -8,7 +8,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
-import static com.epam.coopaint.util.MailData.*;
+import static com.epam.coopaint.util.MailData.EMAIL;
+import static com.epam.coopaint.util.MailData.PASSWORD;
 
 public class MailSender {
     private static Logger logger = LogManager.getLogger();

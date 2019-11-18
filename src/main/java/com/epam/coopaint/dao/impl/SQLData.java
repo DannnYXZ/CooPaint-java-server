@@ -1,7 +1,5 @@
 package com.epam.coopaint.dao.impl;
 
-import com.epam.coopaint.domain.UserAction;
-
 class SQLData {
     static final String COLUMN_ID = "id";
     static final String COLUMN_NAME = "name";

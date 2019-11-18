@@ -1,15 +1,11 @@
 package com.epam.coopaint.controller;
 
-import com.epam.coopaint.domain.User;
-
 import javax.enterprise.inject.spi.CDI;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
-
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
 public class CDIConfigurator extends ServerEndpointConfig.Configurator {
 

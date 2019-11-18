@@ -1,16 +1,6 @@
 package com.epam.coopaint.controller;
 
-import com.epam.coopaint.service.WSBoardService;
-import com.epam.coopaint.domain.Message;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 
 @ApplicationScoped

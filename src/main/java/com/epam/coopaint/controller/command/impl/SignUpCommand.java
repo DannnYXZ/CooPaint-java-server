@@ -1,12 +1,12 @@
 package com.epam.coopaint.controller.command.impl;
 
+import com.epam.coopaint.controller.command.Command;
 import com.epam.coopaint.domain.ErrorInfo;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.controller.command.Command;
-import com.epam.coopaint.service.UserService;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
