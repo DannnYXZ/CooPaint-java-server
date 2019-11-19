@@ -1,5 +1,8 @@
 package com.epam.coopaint.controller;
 
+import com.epam.coopaint.controller.command.WSCommand;
+import com.epam.coopaint.domain.CommandResult;
+import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.service.WSChatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,6 +15,7 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -20,7 +24,6 @@ import java.util.UUID;
 @ServerEndpoint(value = "/chat", configurator = CDIConfigurator.class)
 public class WSChatController {
     private static Logger logger = LogManager.getLogger();
-    private Set<Session> sessions = new HashSet<>();
 
     @Inject
     private WSChatService chatService;
@@ -28,16 +31,13 @@ public class WSChatController {
     @OnOpen
     public void open(Session session, EndpointConfig config) {
         logger.info("New websocket session.");
-        sessions.add(session);
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
         session.getUserProperties().put(HttpSession.class.getName(), httpSession); // HTTP TTL < WS TTL
-        //UUID chatUUID = UUID.fromString("123e4567-e89b-12d3-a456-426655440000"); // FIXME: take from ...
-        //chatService.addSession(chatUUID, session);
     }
 
     @OnClose
     public void close(Session session) {
-        sessions.remove(session);
+        chatService.removeSession(session);
         logger.info("Closed session.");
     }
 
@@ -50,15 +50,34 @@ public class WSChatController {
     public void handleMessage(String message, Session session) {
         HttpSession httpSession = (HttpSession) session.getUserProperties().get(HttpSession.class.getName());
         var mapper = new ObjectMapper();
-        JsonNode rootNode = null;
         try {
-            rootNode = mapper.readTree(message);
+            JsonNode rootNode = mapper.readTree(message);
             String url = rootNode.path("url").asText();
             String method = rootNode.path("method").asText();
             String body = mapper.writeValueAsString(rootNode.path("body"));
-            CommandDispatcher.INSTANCE.dispatch(CommandDispatcher.Method.valueOf(method), url, body, httpSession, session);
+            CommandResult result = CommandDispatcher.INSTANCE
+                    .dispatch(CommandDispatcher.Method.valueOf(method), url, body, httpSession, session);
+            if (result.getClass() == WSCommandResult.class) {
+                sendMessage((WSCommandResult) result);
+            } else {
+                sendMessage(result.getBody(), session);
+            }
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void sendMessage(String message, Session session) {
+        try {
+            session.getBasicRemote().sendText(message);
+        } catch (IOException e) {
+            logger.error("Failed to send message.", e);
+        }
+    }
+
+    private void sendMessage(WSCommandResult message) {
+        for (Session session : message.getReceivers()) {
+            sendMessage(message.getBody(), session);
         }
     }
 }

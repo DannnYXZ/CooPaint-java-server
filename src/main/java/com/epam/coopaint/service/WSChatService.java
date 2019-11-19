@@ -1,70 +1,48 @@
 package com.epam.coopaint.service;
 
 import com.epam.coopaint.domain.Message;
+import com.epam.coopaint.domain.Pair;
 import com.epam.coopaint.exception.ServiceException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.websocket.Session;
-import java.io.IOException;
 import java.util.*;
 
 @ApplicationScoped // access is sequential (transactions not supported)
 public class WSChatService {
     private static Logger logger = LogManager.getLogger();
-    private final Map<UUID, List<Message>> chatBoxes = new HashMap<>(); // <chat, messages>
-    private int messageId = 0;
+    private final Map<UUID, List<Message>> chatBoxes = new HashMap<>(); // <chat, messages> ~ persistent
+    private final Map<UUID, Set<Session>> chatSessions = new HashMap<>(); // <chat, connections> ~ dynamic
 
-    public void addChatRoom(UUID chatUUID) {
-        List<Message> messages = chatBoxes.computeIfAbsent(chatUUID, s -> new ArrayList<>());
-        //chatSessions.add(session);
-    }
-
-    public UUID connectTo(String chatUUID) {
+    public Pair<UUID, Set<Session>> connectTo(String chatUUID, Session session) {
         UUID uuid;
         try {
             uuid = UUID.fromString(chatUUID);
         } catch (IllegalArgumentException e) {
             uuid = UUID.randomUUID();
         }
-        chatBoxes.put(uuid, new ArrayList<>());
-        return uuid;
+        chatBoxes.computeIfAbsent(uuid, x -> new ArrayList<>());
+        Set<Session> sessions = chatSessions.computeIfAbsent(uuid, x -> new HashSet<>());
+        sessions.add(session);
+        return new Pair<>(uuid, sessions);
     }
 
     public List<Message> readChatHistory(UUID chatUUID) throws ServiceException {
         return chatBoxes.getOrDefault(chatUUID, new ArrayList<>());
     }
 
-    private JsonNode createPostMessages(Message message) {
-        var mapper = new ObjectMapper();
-        ObjectNode action = mapper.createObjectNode();
-        action.put("action", "add-messages");
-        action.set("message", mapper.valueToTree(message));
-        return action;
-    }
-
-    public List<Message> addMessages(UUID chatBox, List<Message> messages) {
-        chatBoxes.get(chatBox).addAll(messages);
-        return messages;
-    }
-
-    private void sendToSession(Session session, JsonNode message) {
-        var mapper = new ObjectMapper();
-        try {
-            session.getBasicRemote().sendText(mapper.writeValueAsString(message));
-        } catch (IOException e) {
-            chatBoxes.remove(session);
-            logger.error(e);
+    public void removeSession(Session session) {
+        for (Map.Entry<UUID, Set<Session>> elem : chatSessions.entrySet()) {
+            Set<Session> sessions = elem.getValue();
+            sessions.remove(session);
         }
     }
 
-    public void sendToAllConnectedSessions(String chatUUID, JsonNode message) {
-        //for (Session session : sessions) {
-        //sendToSession(session, message);
-        //}
+    public Pair<List<Message>, Set<Session>> addMessages(UUID chatUUID, List<Message> messages) {
+        chatBoxes.get(chatUUID).addAll(messages);
+        Set<Session> sessions = chatSessions.get(chatUUID);
+        return new Pair<>(messages, sessions);
     }
 }

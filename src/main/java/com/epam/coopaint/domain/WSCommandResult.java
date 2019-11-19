@@ -1,16 +1,18 @@
 package com.epam.coopaint.domain;
 
+import javax.websocket.Session;
+import java.util.HashSet;
+import java.util.Set;
+
 public class WSCommandResult extends CommandResult {
-    public enum ResponseType {SEND_BACK, BROADCAST}
+    private Set<Session> receivers = new HashSet<>();
 
-    private ResponseType responseType = ResponseType.SEND_BACK;
-
-    public ResponseType getResponseType() {
-        return responseType;
+    public Set<Session> getReceivers() {
+        return receivers;
     }
 
-    public WSCommandResult setResponseType(ResponseType responseType) {
-        this.responseType = responseType;
+    public WSCommandResult setReceivers(Set<Session> receivers) {
+        this.receivers = receivers;
         return this;
     }
 }
