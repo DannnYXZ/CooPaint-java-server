@@ -11,6 +11,7 @@ import com.epam.coopaint.service.ServiceFactory;
 import com.epam.coopaint.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,23 +27,24 @@ public class SignInCommand2 implements Command2 {
     private static Logger logger = LogManager.getLogger();
 
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+    public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         var mapper = new ObjectMapper();
         UserService userService = ServiceFactory.getInstance().getUserService();
         try {
             try {
+                var httpSession = (HttpSession) session;
                 SignInUpBundle signInUpBundle = mapper.readValue(body, SignInUpBundle.class);
                 User user = userService.singIn(signInUpBundle);
                 if (!user.getAvatar().isEmpty()) {
                     user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
                 }
                 String jsonUser = mapper.writeValueAsString(user);
-                session.setAttribute(SESSION_USER, user);
+                httpSession.setAttribute(SESSION_USER, user);
                 return new CommandResult().setBody(jsonUser);
             } catch (ServiceException e) {
-                var error = new ErrorInfo(SC_NOT_FOUND, "sign.in.error.no.such");
+                ObjectNode err = mapper.createObjectNode().put("body", "sign.in.error.no.such");
                 logger.error("Not registered user tried to sign in.");
-                return new CommandResult().setCode(SC_NOT_FOUND).setBody(mapper.writeValueAsString(error));
+                return new CommandResult().setCode(SC_NOT_FOUND).setBody(mapper.writeValueAsString(err));
             }
         } catch (JsonProcessingException e) {
             throw new CommandException(e);

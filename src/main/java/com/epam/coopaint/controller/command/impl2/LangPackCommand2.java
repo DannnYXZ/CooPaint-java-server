@@ -15,7 +15,7 @@ import java.util.List;
 public class LangPackCommand2 implements Command2 {
 
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+    public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         var mapper = new ObjectMapper();
         try {
             JsonNode root = mapper.readTree(body);

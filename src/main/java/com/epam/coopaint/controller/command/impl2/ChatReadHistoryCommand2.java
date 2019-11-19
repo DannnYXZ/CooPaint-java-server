@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class ChatReadHistoryCommand2 extends WSCommand {
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+    public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         UUID chatUUID = UUID.fromString(props.get(0));
         try {
             List<Message> messages = sessionHandler.readChatHistory(chatUUID);

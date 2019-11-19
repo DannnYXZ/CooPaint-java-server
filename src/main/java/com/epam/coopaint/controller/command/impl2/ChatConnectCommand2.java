@@ -13,7 +13,7 @@ import java.util.UUID;
 
 public class ChatConnectCommand2 extends WSCommand {
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+    public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         String chatUUID = props.get(0); // can be UUID or null
         UUID result = sessionHandler.connectTo(chatUUID);
         var mapper = new ObjectMapper();

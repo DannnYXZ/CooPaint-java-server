@@ -36,7 +36,7 @@ public class WSChatService {
     }
 
     public List<Message> readChatHistory(UUID chatUUID) throws ServiceException {
-        return chatBoxes.get(chatUUID);
+        return chatBoxes.getOrDefault(chatUUID, new ArrayList<>());
     }
 
     private JsonNode createPostMessages(Message message) {

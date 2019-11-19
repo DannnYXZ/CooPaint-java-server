@@ -1,12 +1,10 @@
 package com.epam.coopaint.controller.command.impl2;
 
-import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.controller.command.WSCommand;
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.Message;
 import com.epam.coopaint.exception.CommandException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -17,7 +15,7 @@ import java.util.UUID;
 
 public class ChatAcceptMessagesCommand2 extends WSCommand {
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+    public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         try {
             // add to chat
             var mapper = new ObjectMapper();

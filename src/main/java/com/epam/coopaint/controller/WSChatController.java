@@ -56,7 +56,7 @@ public class WSChatController {
             String url = rootNode.path("url").asText();
             String method = rootNode.path("method").asText();
             String body = mapper.writeValueAsString(rootNode.path("body"));
-            CommandDispatcher.INSTANCE.dispatch(CommandDispatcher.Method.valueOf(method), url, body, httpSession);
+            CommandDispatcher.INSTANCE.dispatch(CommandDispatcher.Method.valueOf(method), url, body, httpSession, session);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

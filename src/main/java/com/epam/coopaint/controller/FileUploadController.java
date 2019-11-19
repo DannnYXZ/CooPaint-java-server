@@ -58,9 +58,9 @@ public class FileUploadController extends HttpServlet {
                         }
                     } catch (ServiceException | RuntimeException e2) {
                         logger.error(e2);
-                        var error = new ErrorInfo(SC_INTERNAL_SERVER_ERROR, "ಠ╭╮ಠ");
                         response.setStatus(SC_INTERNAL_SERVER_ERROR);
-                        out.write(new ObjectMapper().writeValueAsString(error));
+                        var err = new ObjectMapper().createObjectNode().put("body", "ಠ╭╮ಠ");
+                        out.write(new ObjectMapper().writeValueAsString(err));
                     }
 //                    if (uploadType == UploadType.BOARD) {
 //                        String filePath = fileService.save(part.getInputStream(), UPLOAD_PATH_BOARD);

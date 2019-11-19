@@ -9,7 +9,7 @@ import java.util.List;
 
 public class WrongRequestCommand2 implements Command2 {
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) {
+    public CommandResult execute(List<String> props, String body, Object session) {
         var out = new CommandResult();
         out.setCode(HttpServletResponse.SC_BAD_REQUEST);
         return out;

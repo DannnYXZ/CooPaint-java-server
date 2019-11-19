@@ -10,6 +10,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.stream.Collectors;
@@ -40,7 +41,8 @@ public class FrontController extends HttpServlet {
         try {
             String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
             String url = request.getPathInfo();
-            CommandResult result = CommandDispatcher.INSTANCE.dispatch(method, url, body, request.getSession(false));
+            HttpSession session = request.getSession(false);
+            CommandResult result = CommandDispatcher.INSTANCE.dispatch(method, url, body, session, session);
             response.setStatus(result.getStatusCode());
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");

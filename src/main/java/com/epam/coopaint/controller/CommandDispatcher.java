@@ -113,16 +113,16 @@ enum CommandDispatcher {
         return matchedDescriptor;
     }
 
-    public CommandResult dispatch(Method method, String url, String req, HttpSession httpSession) {
+    public CommandResult dispatch(Method method, String url, String req, HttpSession identityWard, Object session) {
         CommandDescriptor matchedDescriptor = getMatchingDescriptor(method, url);
         List<String> props = StringUtil.parseGroups(url, matchedDescriptor.routePattern);
-        User user = (User) httpSession.getAttribute(SESSION_USER);
+        User user = (User) identityWard.getAttribute(SESSION_USER);
         List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
         urlResources.add(RESOURCE_ALL);
         try {
             CommandResult result;
             if (canAccess(urlResources, matchedDescriptor.action, user)) {
-                result = matchedDescriptor.command.execute(props, req, httpSession);
+                result = matchedDescriptor.command.execute(props, req, session);
             } else {
                 result = new CommandResult().setCode(HttpServletResponse.SC_FORBIDDEN);
             }

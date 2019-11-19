@@ -21,9 +21,10 @@ import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 public class SignUpCommand2 implements Command2 {
 
     @Override
-    public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
+    public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         var mapper = new ObjectMapper();
         try {
+            var httpSession = (HttpSession) session;
             SignInUpBundle bundle = mapper.readValue(body, SignInUpBundle.class);
             UserService userService = ServiceFactory.getInstance().getUserService();
             List<User> users = userService.getUsersByEmail(bundle.getEmail());
@@ -32,7 +33,7 @@ public class SignUpCommand2 implements Command2 {
                 return new CommandResult().setCode(SC_BAD_REQUEST).setBody(mapper.writeValueAsString(err));
             }
             User user = userService.signUp(bundle);
-            session.setAttribute(SESSION_USER, user);
+            httpSession.setAttribute(SESSION_USER, user);
             // MailSender.getInstance().sendMail("Welcome to CooPaint, " + user.getName(), user.getEmail());
             return new CommandResult().setBody(mapper.writeValueAsString(user));
         } catch (ServiceException | JsonProcessingException e) {
