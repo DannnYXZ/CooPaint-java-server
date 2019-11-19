@@ -33,6 +33,10 @@ public class WSChatService {
         // TODO: notify (<username> left)
     }
 
+    public UUID connectTo(String chatUUID) {
+
+    }
+
     public String readChatHistory(UUID chatUUID) throws ServiceException {
         var mapper = new ObjectMapper();
         ObjectNode bundle = mapper.createObjectNode();
@@ -100,7 +104,7 @@ public class WSChatService {
 
     public void sendToAllConnectedSessions(String chatUUID, JsonNode message) {
         //for (Session session : sessions) {
-            //sendToSession(session, message);
+        //sendToSession(session, message);
         //}
     }
 }

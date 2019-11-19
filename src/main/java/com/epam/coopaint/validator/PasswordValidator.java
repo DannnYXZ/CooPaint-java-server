@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public enum PasswordValidator {
     INSTANCE;
-    private static String pattern = null;
+    private String pattern = null;
 
     // TODO: decorator
     public PasswordValidator buildValidator(boolean forceSpecialChar,
@@ -18,15 +18,12 @@ public enum PasswordValidator {
         if (forceSpecialChar) {
             patternBuilder.append("(?=.*[@#$%])");
         }
-
         if (forceCapitalLetter) {
             patternBuilder.append("(?=.*[A-Z])");
         }
-
         if (forceNumber) {
             patternBuilder.append("(?=.*d)");
         }
-
         patternBuilder.append(".{" + minLength + "," + maxLength + "})");
         pattern = patternBuilder.toString();
 

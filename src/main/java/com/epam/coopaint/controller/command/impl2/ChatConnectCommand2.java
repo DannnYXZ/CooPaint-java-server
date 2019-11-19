@@ -12,9 +12,9 @@ import java.util.UUID;
 public class ChatConnectCommand2 extends WSCommand {
     @Override
     public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
-        UUID chatUUID = UUID.fromString(props.get(0));
+        String chatUUID = props.get(0); // can be UUID or null
         try {
-            String bundle = sessionHandler.readChatHistory(chatUUID);
+            UUID result = sessionHandler.connectTo(chatUUID);
             return new CommandResult().setBody(bundle);
         } catch (ServiceException e) {
             throw new CommandException(e);
