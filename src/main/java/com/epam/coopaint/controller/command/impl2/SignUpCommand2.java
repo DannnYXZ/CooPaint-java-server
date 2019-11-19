@@ -10,6 +10,7 @@ import com.epam.coopaint.service.ServiceFactory;
 import com.epam.coopaint.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -23,17 +24,18 @@ public class SignUpCommand2 implements Command2 {
     public CommandResult execute(List<String> props, String body, HttpSession session) throws CommandException {
         var mapper = new ObjectMapper();
         try {
-            try {
-                SignInUpBundle bundle = mapper.readValue(body, SignInUpBundle.class);
-                UserService clientService = ServiceFactory.getInstance().getUserService();
-                User user = clientService.signUp(bundle);
-                session.setAttribute(SESSION_USER, user); // TODO: check storage
-                return new CommandResult().setBody(mapper.writeValueAsString(user));
-                // MailSender.getInstance().sendMail("Welcome to CooPaint, " + user.getName(), user.getEmail());
-            } catch (ServiceException e) {
-                return new CommandResult().setCode(SC_BAD_REQUEST).setBody("sign.up.error.exists");
+            SignInUpBundle bundle = mapper.readValue(body, SignInUpBundle.class);
+            UserService userService = ServiceFactory.getInstance().getUserService();
+            List<User> users = userService.getUsersByEmail(bundle.getEmail());
+            if (!users.isEmpty()) {
+                ObjectNode err = mapper.createObjectNode().put("body", "sign.up.error.exists");
+                return new CommandResult().setCode(SC_BAD_REQUEST).setBody(mapper.writeValueAsString(err));
             }
-        } catch (JsonProcessingException e) {
+            User user = userService.signUp(bundle);
+            session.setAttribute(SESSION_USER, user);
+            // MailSender.getInstance().sendMail("Welcome to CooPaint, " + user.getName(), user.getEmail());
+            return new CommandResult().setBody(mapper.writeValueAsString(user));
+        } catch (ServiceException | JsonProcessingException e) {
             throw new CommandException(e);
         }
     }

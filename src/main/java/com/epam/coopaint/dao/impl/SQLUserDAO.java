@@ -34,7 +34,7 @@ public class SQLUserDAO implements UserDAO {
     public User signIn(SignInUpBundle bundle) throws DAOException {
         try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection()) {
             try {
-                User user = getUser(bundle.getEmail());
+                User user = getUsers(bundle.getEmail()).get(0);
                 Encryptor encryptor = Encryptor.getInstance();
                 encryptor.generateDidgest(bundle.getPassword(), user.getSalt());
                 if (Arrays.equals(user.getHash(), encryptor.getCurrentHash())) {
@@ -69,17 +69,13 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public User getUser(String email) throws DAOException {
+    public List<User> getUsers(String email) throws DAOException {
         try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
              PreparedStatement selectStatement = connection.prepareStatement(QUERY_FETCH_USER_BY_EMAIL)) {
             selectStatement.setString(1, email);
             try (ResultSet result = selectStatement.executeQuery()) {
                 List<User> users = mapToUserList(result);
-                if (users.size() > 0) {
-                    return users.get(0);
-                } else {
-                    throw new DAOException("No such user with email: " + email + " found.");
-                }
+                return users;
             }
         } catch (SQLException | ConnectionPoolException e) {
             throw new DAOException("Failed to get user by email: " + email, e);

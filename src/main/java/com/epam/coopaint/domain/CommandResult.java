@@ -3,13 +3,8 @@ package com.epam.coopaint.domain;
 import javax.servlet.http.HttpServletResponse;
 
 public class CommandResult {
-    public enum ResponseType {BROADCAST, OK, ERROR}
-
     private int statusCode = HttpServletResponse.SC_OK;
     private String body = "";
-
-    public CommandResult() {
-    }
 
     public int getStatusCode() {
         return statusCode;

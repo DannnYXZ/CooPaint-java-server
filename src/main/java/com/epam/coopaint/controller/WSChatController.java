@@ -12,12 +12,15 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
 @ServerEndpoint(value = "/chat", configurator = CDIConfigurator.class)
 public class WSChatController {
     private static Logger logger = LogManager.getLogger();
+    private Set<Session> sessions = new HashSet<>();
 
     @Inject
     private WSChatService chatService;
@@ -25,15 +28,16 @@ public class WSChatController {
     @OnOpen
     public void open(Session session, EndpointConfig config) {
         logger.info("New websocket session.");
+        sessions.add(session);
         HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
         session.getUserProperties().put(HttpSession.class.getName(), httpSession); // HTTP TTL < WS TTL
-        UUID chatUUID = UUID.fromString("123e4567-e89b-12d3-a456-426655440000"); // FIXME: take from ...
-        chatService.addSession(chatUUID, session);
+        //UUID chatUUID = UUID.fromString("123e4567-e89b-12d3-a456-426655440000"); // FIXME: take from ...
+        //chatService.addSession(chatUUID, session);
     }
 
     @OnClose
     public void close(Session session) {
-        //chatService.removeSession(session);
+        sessions.remove(session);
         logger.info("Closed session.");
     }
 

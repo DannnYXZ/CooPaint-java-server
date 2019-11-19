@@ -41,21 +41,8 @@ enum CommandDispatcher {
         String routePattern;
         String resourceUID;
         ResourceAction action;
-        List<Integer> argumentIndices;
+        List<Integer> argumentIndices = new ArrayList<>();
         Command2 command;
-
-        CommandDescriptor() {
-            argumentIndices = new ArrayList<>();
-        }
-
-        CommandDescriptor(Method method, String routePattern, List<Integer> resourceIndices, ResourceAction action, Command2 command) {
-            this.method = method;
-            this.routePattern = routePattern;
-            // this.resourceUID = resourceUID;
-            this.action = action;
-            this.argumentIndices = resourceIndices;
-            this.command = command;
-        }
 
         CommandDescriptor method(Method method) {
             this.method = method;
@@ -95,17 +82,17 @@ enum CommandDispatcher {
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern("/sign-out").action(READ_SITE).command(new SignOutCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern("/lang-pack").action(READ_SITE).command(new LangPackCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern("/set-avatar").action(UPLOAD_FILE).command(new UploadSetAvatarCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat-connect/(^$|{0})", UUID)).indices(List.of(0)).action(READ_CHAT).command(new ChatReadHistoryCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/({0})", UUID)).indices(List.of(0)).action(READ_CHAT).command(new ChatConnectCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/chat/({0})", UUID)).indices(List.of(0)).action(UPDATE_CHAT).command(new ChatAcceptMessageCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(READ_BOARD).command(new ChatAcceptMessageCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(UPDATE_BOARD).command(new ChatAcceptMessageCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/(^$|{0})", UUID)).action(READ_SITE).command(new ChatReadHistoryCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(READ_CHAT).command(new ChatConnectCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(UPDATE_CHAT).command(new ChatAcceptMessagesCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(READ_BOARD).command(new ChatAcceptMessagesCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(UPDATE_BOARD).command(new ChatAcceptMessagesCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(".*").command(new WrongRequestCommand2()));
     }
 
     private boolean canAccess(List<String> resources, ResourceAction action, User user) throws ServiceException {
         SecurityService securityService = ServiceFactory.getInstance().getSecurityService();
-        boolean canAccess = false;
+        boolean canAccess = false; // FIXME: strict
         for (String resource : resources) {
             if (securityService.canAccess(resource, action, user)) {
                 canAccess = true;

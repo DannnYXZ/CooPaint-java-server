@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
+import java.util.List;
 
 import static com.epam.coopaint.domain.ACLData.*;
 import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
@@ -38,6 +39,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<User> getUsersByEmail(String email) throws ServiceException {
+        UserDAO userDAO = DAOFactory.getInstance().getUserDAO();
+        try {
+            List<User> users = userDAO.getUsers(email);
+            return users;
+        } catch (DAOException e) {
+            throw new ServiceException(e);
+        }
+    }
+
+    @Override
     public User createGuest() {
         User guest = new User();
         guest.setName(GUEST_NAME_DEFAULT);
@@ -55,18 +67,24 @@ public class UserServiceImpl implements UserService {
     @Override
     public User signUp(SignInUpBundle signUpBundle) throws ServiceException {
         // validation
-        if (UserValidator.INSTANCE.isValid(signUpBundle)) {
+        //if (UserValidator.INSTANCE.isValid(signUpBundle)) {
+        if (true) { //FIXME
             UserDAO userDAO = DAOFactory.getInstance().getUserDAO();
             try {
                 userDAO.signUp(signUpBundle);
-                User user = userDAO.getUser(signUpBundle.getEmail());
-                user.getGroups().add(GROUP_USER);
-                return user;
+                List<User> users = userDAO.getUsers(signUpBundle.getEmail());
+                if (users.size() != 0) {
+                    User user = users.get(0);
+                    user.getGroups().add(GROUP_USER);
+                    return user;
+                } else {
+                    throw new ServiceException("No user with email: " + signUpBundle.getEmail());
+                }
             } catch (DAOException e) {
                 throw new ServiceException("Failed to signUp user.", e);
             }
         } else {
-            throw new ServiceException("Invalid user data."); // TODO: reason - ake validator.getReason()
+            throw new ServiceException("Invalid user data."); // TODO: reason - aka validator.getReason()
         }
     }
 
