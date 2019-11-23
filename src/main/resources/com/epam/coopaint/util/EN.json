@@ -7,9 +7,10 @@
   "create.one.here": "Create new here!",
   "got.an.account?": "Got an account?",
   "log.in.here": "Log in here!",
-  "log.in.or.sign.up": "Log In or Sign Up",
+  "log.in.or.sign.up": "Log In | Sign Up",
   "forgot.password?": "Forgot your password?",
   "your.email": "Your email",
+  "email": "Email",
   "enter.password": "Enter password",
   "invite": "Invite",
   "send": "SEND",
@@ -20,5 +21,8 @@
   "create.new.board": "Create new board",
   "manage.participants": "Manage participants",
   "sign.in.error.no.such": "No such user or wrong password",
-  "sign.up.error.exists": "User with such email already exists"
+  "sign.up.error.exists": "User with such email already exists",
+  "account": "Account",
+  "name": "Name",
+  "password.change": "Change password"
 }

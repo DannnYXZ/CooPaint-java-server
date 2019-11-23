@@ -7,9 +7,10 @@
   "create.one.here": "Создайте новый здесь!",
   "got.an.account?": "Уже есть аккаунт?",
   "log.in.here": "Войдите здесь!",
-  "log.in.or.sign.up": "Вход или Регистрация",
+  "log.in.or.sign.up": "Вход | Регистрация",
   "forgot.password?": "Забыли пароль?",
   "your.email": "Ваш email",
+  "email": "Почта",
   "enter.password": "Пароль",
   "invite": "Пригласить",
   "send": "ОТПРАВИТЬ",
@@ -20,5 +21,8 @@
   "create.new.board": "Создать новую доску",
   "manage.participants": "Управление участниками",
   "sign.in.error.no.such": "Нет такого пользователя или неверный пароль",
-  "sign.up.error.exists": "Пользователь с такой почтой уже существует"
+  "sign.up.error.exists": "Пользователь с такой почтой уже существует",
+  "account": "Учетная запись",
+  "name": "Имя",
+  "password.change": "Сменить пароль"
 }

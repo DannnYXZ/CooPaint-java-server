@@ -10,6 +10,9 @@ import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
 import com.epam.coopaint.service.ServiceFactory;
 import com.epam.coopaint.util.StringUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -132,7 +135,15 @@ enum CommandDispatcher {
             return new CommandResult().setCode(SC_BAD_REQUEST).setBody(e.getMessage());
         } catch (RuntimeException e) {
             logger.fatal(e);
-            return new CommandResult().setCode(SC_INTERNAL_SERVER_ERROR).setBody("Internal ERROR ಠ╭╮ಠ.");
+            var mapper = new ObjectMapper();
+            ObjectNode err = new ObjectMapper().createObjectNode().put("body", "Internal ERROR ಠ╭╮ಠ.");
+            var result = new CommandResult().setCode(SC_INTERNAL_SERVER_ERROR);
+            try {
+                return result.setBody(mapper.writeValueAsString(err));
+            } catch (JsonProcessingException ex) {
+                logger.error(ex);
+                return result;
+            }
         }
     }
 }
