@@ -6,7 +6,7 @@ import com.epam.coopaint.domain.User;
 
 import java.util.List;
 
-public class SQLBoardDAO implements BoardDAO {
+public class SQLBoardDAOImpl implements BoardDAO {
     private static String QUERY_ADD_BOARD = "INSERT into board (id) WHERE id=NULL";
     private static String QUERY_DELETE_BOARD = "DELETE ";
 

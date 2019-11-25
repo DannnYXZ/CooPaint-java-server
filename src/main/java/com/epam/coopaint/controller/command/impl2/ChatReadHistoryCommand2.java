@@ -1,6 +1,5 @@
 package com.epam.coopaint.controller.command.impl2;
 
-import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.controller.command.WSCommand;
 import com.epam.coopaint.domain.Message;
 import com.epam.coopaint.domain.WSCommandResult;
@@ -22,7 +21,7 @@ public class ChatReadHistoryCommand2 extends WSCommand {
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         UUID chatUUID = UUID.fromString(props.get(0));
         try {
-            List<Message> messages = sessionHandler.readChatHistory(chatUUID);
+            List<Message> messages = chatService.readChatHistory(chatUUID);
             var mapper = new ObjectMapper();
             ObjectNode jbody = mapper.createObjectNode();
             ArrayNode arr = mapper.createArrayNode();

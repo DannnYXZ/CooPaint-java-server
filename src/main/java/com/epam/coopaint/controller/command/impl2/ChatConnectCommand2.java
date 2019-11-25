@@ -1,7 +1,6 @@
 package com.epam.coopaint.controller.command.impl2;
 
 import com.epam.coopaint.controller.command.WSCommand;
-import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.Pair;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
@@ -19,7 +18,7 @@ public class ChatConnectCommand2 extends WSCommand {
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         String chatUUID = props.get(0); // can be UUID or null
         var wsSession = (Session) session;
-        Pair<UUID, Set<Session>> result = sessionHandler.connectTo(chatUUID, wsSession);
+        Pair<UUID, Set<Session>> result = chatService.connectTo(chatUUID, wsSession);
         var mapper = new ObjectMapper();
         ObjectNode jbody = mapper.createObjectNode();
         jbody.put("action", "connect");

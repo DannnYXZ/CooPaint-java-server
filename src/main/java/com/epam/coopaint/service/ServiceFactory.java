@@ -2,6 +2,7 @@ package com.epam.coopaint.service;
 
 import com.epam.coopaint.service.impl.FileSystemServiceImpl;
 import com.epam.coopaint.service.impl.SecurityServiceImpl;
+import com.epam.coopaint.service.impl.SnapshotServiceImpl;
 import com.epam.coopaint.service.impl.UserServiceImpl;
 
 public final class ServiceFactory {
@@ -9,6 +10,7 @@ public final class ServiceFactory {
     private final UserService userService = new UserServiceImpl();
     private final SecurityService securityService = new SecurityServiceImpl();
     private final FileSystemService fileSystemService = new FileSystemServiceImpl();
+    private final SnapshotService snapshotService = new SnapshotServiceImpl();
 
     private ServiceFactory() {
     }
@@ -27,5 +29,9 @@ public final class ServiceFactory {
 
     public SecurityService getSecurityService() {
         return securityService;
+    }
+
+    public SnapshotService getSnapshotService() {
+        return snapshotService;
     }
 }

@@ -37,6 +37,7 @@ enum CommandDispatcher {
 
     private static Logger logger = LogManager.getLogger();
     private static final String UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
+    private static final String SNAPSHOT = "[0-9a-zA-Z]*";
     private final List<CommandDescriptor> commandDescriptors = new ArrayList<>();
 
     private static class CommandDescriptor {
@@ -90,6 +91,7 @@ enum CommandDispatcher {
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(UPDATE_CHAT).command(new ChatAcceptMessagesCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(READ_BOARD).command(new ChatAcceptMessagesCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(UPDATE_BOARD).command(new ChatAcceptMessagesCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/snapshot/({0})", SNAPSHOT)).action(GET_SNAPSHOT).command(new GetSnapshotCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(".*").command(new WrongRequestCommand2()));
     }
 

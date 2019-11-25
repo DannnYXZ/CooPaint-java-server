@@ -11,4 +11,8 @@ class SQLData {
 
     static final String COLUMN_ACL_GROUP = "group";
 
+    static final String COLUMN_SNAP_LINK = "link";
+    static final String COLUMN_SNAP_CHAT_ID = "chat_id";
+    static final String COLUMN_SNAP_BOARD_ID = "board_id";
+
 }

@@ -17,8 +17,8 @@ public class StringUtil {
         Matcher matcher = Pattern.compile(regex).matcher(text);
         var properties = new ArrayList<String>();
         if (matcher.find()) {
-            for (int i = 1; i < matcher.groupCount(); i++) {
-                properties.add(matcher.group(i));
+            for (int i = 0; i < matcher.groupCount(); i++) {
+                properties.add(matcher.group(i + 1));
             }
         }
         return properties;

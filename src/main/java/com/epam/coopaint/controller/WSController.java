@@ -1,6 +1,5 @@
 package com.epam.coopaint.controller;
 
-import com.epam.coopaint.controller.command.WSCommand;
 import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.service.WSChatService;
@@ -16,13 +15,12 @@ import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+
+import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
 
 @ApplicationScoped
-@ServerEndpoint(value = "/chat", configurator = CDIConfigurator.class)
-public class WSChatController {
+@ServerEndpoint(value = "/ws", configurator = CDIConfigurator.class)
+public class WSController {
     private static Logger logger = LogManager.getLogger();
 
     @Inject
@@ -31,8 +29,8 @@ public class WSChatController {
     @OnOpen
     public void open(Session session, EndpointConfig config) {
         logger.info("New websocket session.");
-        HttpSession httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-        session.getUserProperties().put(HttpSession.class.getName(), httpSession); // HTTP TTL < WS TTL
+        HttpSession httpSession = (HttpSession) config.getUserProperties().get(SESSION_HTTP);
+        session.getUserProperties().put(SESSION_HTTP, httpSession); // HTTP TTL < WS TTL
     }
 
     @OnClose
@@ -48,7 +46,7 @@ public class WSChatController {
 
     @OnMessage
     public void handleMessage(String message, Session session) {
-        HttpSession httpSession = (HttpSession) session.getUserProperties().get(HttpSession.class.getName());
+        HttpSession httpSession = (HttpSession) session.getUserProperties().get(SESSION_HTTP);
         var mapper = new ObjectMapper();
         try {
             JsonNode rootNode = mapper.readTree(message);

@@ -20,7 +20,7 @@ public class ChatAcceptMessagesCommand2 extends WSCommand {
             var mapper = new ObjectMapper();
             List<Message> messages = Arrays.asList(mapper.readValue(body, Message[].class));
             UUID chatUUID = UUID.fromString(props.get(0));
-            Pair<List<Message>, Set<Session>> processedMessages = sessionHandler.addMessages(chatUUID, messages); // calc time and from
+            Pair<List<Message>, Set<Session>> processedMessages = chatService.addMessages(chatUUID, messages); // calc time and from
             ObjectNode jbody = mapper.createObjectNode();
             jbody.put("action", "add-messages");
             jbody.set("messages", mapper.valueToTree(processedMessages.getElement0()));

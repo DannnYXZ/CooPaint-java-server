@@ -7,6 +7,8 @@ import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
 
+import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
+
 public class CDIConfigurator extends ServerEndpointConfig.Configurator {
 
     public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
@@ -17,7 +19,7 @@ public class CDIConfigurator extends ServerEndpointConfig.Configurator {
     public void modifyHandshake(ServerEndpointConfig sec, HandshakeRequest request, HandshakeResponse response) {
         HttpSession httpSession = (HttpSession) request.getHttpSession();
         ServletContext servletContext = httpSession.getServletContext();
-        sec.getUserProperties().put(HttpSession.class.getName(), httpSession);
+        sec.getUserProperties().put(SESSION_HTTP, httpSession);
         // User user = (User) httpSession.getAttribute(SESSION_USER);
         // user.setName("EKEKE");
         // httpSession.setAttribute(SESSION_USER, user);

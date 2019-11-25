@@ -8,5 +8,6 @@ public enum ResourceAction {
     CREATE_BOARD,
     UPDATE_BOARD,
     DELETE_BOARD,
-    UPLOAD_FILE
+    UPLOAD_FILE,
+    GET_SNAPSHOT
 }
