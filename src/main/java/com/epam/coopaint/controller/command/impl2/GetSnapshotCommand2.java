@@ -47,10 +47,11 @@ public class GetSnapshotCommand2 implements Command2 {
             try {
                 snap = snapshotService.getSnapshot(snapshotLink);
                 chatService.connectTo(snap.getChatID().toString(), wsSession);
+                boardService.connectTo(snap.getBoardID().toString(), wsSession);
             } catch (ServiceException e) {
                 // no snapshot, allocating chat and board
                 Pair<UUID, Set<Session>> chat = chatService.connectTo("", wsSession);
-                Pair<UUID, Set<Session>> board = chatService.connectTo("", wsSession);
+                Pair<UUID, Set<Session>> board = boardService.connectTo("", wsSession);
                 // TODO: board
                 try {
                     snap = snapshotService.createSnapshot(chat.getElement0(), board.getElement0(), false);

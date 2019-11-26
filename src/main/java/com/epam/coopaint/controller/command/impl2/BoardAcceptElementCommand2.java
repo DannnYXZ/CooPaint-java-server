@@ -27,8 +27,8 @@ public class BoardAcceptElementCommand2 implements Command2 {
             UUID chatUUID = UUID.fromString(props.get(0));
             Pair<List<VShape>, Set<Session>> processedMessages = boardService.addShapes(chatUUID, messages); // calc time and from
             ObjectNode jbody = mapper.createObjectNode();
-            jbody.put("action", "add-messages");
-            jbody.set("messages", mapper.valueToTree(processedMessages.getElement0()));
+            jbody.put("action", "add-elements");
+            jbody.set("elements", mapper.valueToTree(processedMessages.getElement0()));
             WSCommandResult result = (WSCommandResult) new WSCommandResult().setBody(mapper.writeValueAsString(jbody));
             return result.setReceivers(processedMessages.getElement1());
         } catch (JsonProcessingException e) {

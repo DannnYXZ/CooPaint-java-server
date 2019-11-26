@@ -26,6 +26,7 @@ public class WSController {
 
     @Inject
     private WSChatService chatService;
+    @Inject
     private WSBoardService boardService;
 
     @OnOpen
