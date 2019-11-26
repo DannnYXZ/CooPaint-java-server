@@ -1,11 +1,11 @@
 package com.epam.coopaint.controller.command.impl2;
 
 import com.epam.coopaint.controller.command.Command2;
-import com.epam.coopaint.domain.Message;
 import com.epam.coopaint.domain.Pair;
+import com.epam.coopaint.domain.VShape;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
-import com.epam.coopaint.service.WSChatService;
+import com.epam.coopaint.service.WSBoardService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -17,15 +17,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class ChatAcceptMessagesCommand2 implements Command2 {
+public class BoardAcceptElementCommand2 implements Command2 {
     @Override
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         try {
             var mapper = new ObjectMapper();
-            var chatService = CDI.current().select(WSChatService.class).get();
-            List<Message> messages = Arrays.asList(mapper.readValue(body, Message[].class));
+            var boardService = CDI.current().select(WSBoardService.class).get();
+            List<VShape> messages = Arrays.asList(mapper.readValue(body, VShape[].class));
             UUID chatUUID = UUID.fromString(props.get(0));
-            Pair<List<Message>, Set<Session>> processedMessages = chatService.addMessages(chatUUID, messages); // calc time and from
+            Pair<List<VShape>, Set<Session>> processedMessages = boardService.addShapes(chatUUID, messages); // calc time and from
             ObjectNode jbody = mapper.createObjectNode();
             jbody.put("action", "add-messages");
             jbody.set("messages", mapper.valueToTree(processedMessages.getElement0()));

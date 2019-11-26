@@ -2,6 +2,7 @@ package com.epam.coopaint.controller;
 
 import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.WSCommandResult;
+import com.epam.coopaint.service.WSBoardService;
 import com.epam.coopaint.service.WSChatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -25,6 +26,7 @@ public class WSController {
 
     @Inject
     private WSChatService chatService;
+    private WSBoardService boardService;
 
     @OnOpen
     public void open(Session session, EndpointConfig config) {
@@ -36,6 +38,7 @@ public class WSController {
     @OnClose
     public void close(Session session) {
         chatService.removeSession(session);
+        boardService.removeSession(session);
         logger.info("Closed session.");
     }
 
