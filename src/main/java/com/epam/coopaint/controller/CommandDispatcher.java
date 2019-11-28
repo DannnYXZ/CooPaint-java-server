@@ -89,7 +89,7 @@ enum CommandDispatcher {
         //commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/(^$|{0})", UUID)).action(READ_SITE).command(new ChatConnectCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(READ_CHAT).command(new ChatReadHistoryCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(UPDATE_CHAT).command(new ChatAcceptMessagesCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(READ_BOARD).command(new ChatAcceptMessagesCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/board/({0})/elements", UUID)).indices(List.of(0)).action(READ_BOARD).command(new BoardReadHistoryCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/board/({0})/elements", UUID)).indices(List.of(0)).action(UPDATE_BOARD).command(new BoardAcceptElementCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/snapshot/({0})", SNAPSHOT)).action(GET_SNAPSHOT).command(new GetSnapshotCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(".*").command(new WrongRequestCommand2()));

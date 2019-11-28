@@ -1,8 +1,8 @@
-package com.epam.coopaint.dao;
+package com.epam.coopaint.dao.impl;
 
-import com.epam.coopaint.dao.impl.SQLUserDAOImpl;
-import com.epam.coopaint.dao.impl.SecurityDAOImpl;
-import com.epam.coopaint.dao.impl.SnapshotDAOImpl;
+import com.epam.coopaint.dao.SecurityDAO;
+import com.epam.coopaint.dao.SnapshotDAO;
+import com.epam.coopaint.dao.UserDAO;
 
 public final class DAOFactory {
     private static DAOFactory instance = new DAOFactory();

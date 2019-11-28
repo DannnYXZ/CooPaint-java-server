@@ -1,6 +1,6 @@
 package com.epam.coopaint.service.impl;
 
-import com.epam.coopaint.dao.DAOFactory;
+import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.domain.ACL;
 import com.epam.coopaint.domain.ResourceAction;

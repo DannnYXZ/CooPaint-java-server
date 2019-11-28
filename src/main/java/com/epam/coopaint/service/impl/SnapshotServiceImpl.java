@@ -1,6 +1,6 @@
 package com.epam.coopaint.service.impl;
 
-import com.epam.coopaint.dao.DAOFactory;
+import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.SnapshotDAO;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.exception.DAOException;

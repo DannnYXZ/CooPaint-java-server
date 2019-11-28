@@ -22,7 +22,7 @@ import java.util.List;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
-public class SQLUserDAOImpl implements UserDAO {
+class SQLUserDAOImpl implements UserDAO {
     private static Logger logger = LogManager.getLogger();
     private static final int VALIDATION_LINK_LENGTH = 64;
     private static final String QUERY_ADD_USER = "INSERT INTO user (name, email, hash, salt) VALUES (?, ?, ?, ?)";

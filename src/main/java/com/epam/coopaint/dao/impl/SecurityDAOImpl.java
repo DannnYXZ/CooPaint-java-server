@@ -14,7 +14,7 @@ import java.sql.SQLException;
 
 import static com.epam.coopaint.dao.impl.SQLData.COLUMN_ACL_GROUP;
 
-public class SecurityDAOImpl implements SecurityDAO {
+class SecurityDAOImpl implements SecurityDAO {
     private static final String QUERY_RIGHTS_BY_RESOURCE = "SELECT * from acl WHERE resource=?";
 
     @Override

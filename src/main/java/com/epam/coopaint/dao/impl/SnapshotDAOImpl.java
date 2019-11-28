@@ -15,7 +15,7 @@ import java.util.List;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
-public class SnapshotDAOImpl implements SnapshotDAO {
+class SnapshotDAOImpl implements SnapshotDAO {
     private static final String QUERY_GET_SNAPSHOT = "SELECT * FROM snapshot WHERE link=?";
 
     public Snapshot getSnapshot(String link) throws DAOException {

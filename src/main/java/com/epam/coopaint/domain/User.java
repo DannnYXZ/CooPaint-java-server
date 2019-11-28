@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class User {
     private long id;
@@ -19,6 +20,7 @@ public class User {
     private byte[] salt;
     private String avatar;
     private boolean isAuth;
+    private UUID uuid;
     private LangPack lang;
     @JsonIgnore
     private Set<String> groups = new HashSet<>();
@@ -105,5 +107,13 @@ public class User {
 
     public void setGroups(Set<String> groups) {
         this.groups = groups;
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 }
