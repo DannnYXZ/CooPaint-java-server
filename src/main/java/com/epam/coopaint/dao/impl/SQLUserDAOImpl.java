@@ -1,5 +1,6 @@
 package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
@@ -22,7 +23,7 @@ import java.util.List;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
-class SQLUserDAOImpl implements UserDAO {
+class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     private static Logger logger = LogManager.getLogger();
     private static final int VALIDATION_LINK_LENGTH = 64;
     private static final String QUERY_ADD_USER = "INSERT INTO user (name, email, hash, salt) VALUES (?, ?, ?, ?)";
@@ -32,21 +33,17 @@ class SQLUserDAOImpl implements UserDAO {
 
     @Override
     public User signIn(SignInUpBundle bundle) throws DAOException {
-        try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection()) {
-            try {
-                User user = getUsers(bundle.getEmail()).get(0);
-                Encryptor encryptor = Encryptor.getInstance();
-                encryptor.generateDidgest(bundle.getPassword(), user.getSalt());
-                if (Arrays.equals(user.getHash(), encryptor.getCurrentHash())) {
-                    return user;
-                } else {
-                    throw new DAOException("Wrong password.");
-                }
-            } catch (DAOException e) {
-                throw new DAOException("No such user: " + bundle.getEmail(), e);
-            }
-        } catch (ConnectionPoolException | SQLException e) {
-            throw new DAOException("Internal error", e);
+        List<User> users = getUsers(bundle.getEmail());
+        if (users.isEmpty()) {
+            throw new DAOException("No such user: " + bundle.getEmail());
+        }
+        User user = users.get(0);
+        Encryptor encryptor = Encryptor.getInstance();
+        encryptor.generateDidgest(bundle.getPassword(), user.getSalt());
+        if (Arrays.equals(user.getHash(), encryptor.getCurrentHash())) {
+            return user;
+        } else {
+            throw new DAOException("Wrong password.");
         }
     }
 
@@ -70,22 +67,20 @@ class SQLUserDAOImpl implements UserDAO {
 
     @Override
     public List<User> getUsers(String email) throws DAOException {
-        try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement selectStatement = connection.prepareStatement(QUERY_FETCH_USER_BY_EMAIL)) {
+        try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_FETCH_USER_BY_EMAIL)) {
             selectStatement.setString(1, email);
             try (ResultSet result = selectStatement.executeQuery()) {
                 List<User> users = mapToUserList(result);
                 return users;
             }
-        } catch (SQLException | ConnectionPoolException e) {
+        } catch (SQLException e) {
             throw new DAOException("Failed to get user by email: " + email, e);
         }
     }
 
     @Override
     public void signUp(SignInUpBundle bundle) throws DAOException {
-        try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_ADD_USER)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_ADD_USER)) {
             preparedStatement.setString(1, bundle.getEmail());
             preparedStatement.setString(2, bundle.getEmail());
             Encryptor encryptor = Encryptor.getInstance();
@@ -101,8 +96,6 @@ class SQLUserDAOImpl implements UserDAO {
             } else {
                 throw new DAOException("Database error.");
             }
-        } catch (ConnectionPoolException e) {
-            throw new DAOException("Failed to acquire database connection.", e);
         } catch (SQLException e) {
             throw new DAOException("Failed to register user.", e);
         }
@@ -110,8 +103,7 @@ class SQLUserDAOImpl implements UserDAO {
 
     @Override
     public void updateAvatar(long userId, String newAvatarPath) throws DAOException {
-        try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_UPDATE_USER_AVATAR)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_UPDATE_USER_AVATAR)) {
             preparedStatement.setString(1, newAvatarPath);
             preparedStatement.setLong(2, userId);
             int n = preparedStatement.executeUpdate();
@@ -120,7 +112,7 @@ class SQLUserDAOImpl implements UserDAO {
             } else {
                 throw new DAOException("Failed to update avatar.");
             }
-        } catch (SQLException | ConnectionPoolException e) {
+        } catch (SQLException e) {
             throw new DAOException(e);
         }
     }

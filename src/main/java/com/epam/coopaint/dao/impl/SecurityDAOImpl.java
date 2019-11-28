@@ -1,5 +1,6 @@
 package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.domain.ACL;
 import com.epam.coopaint.domain.ResourceAction;
@@ -14,7 +15,7 @@ import java.sql.SQLException;
 
 import static com.epam.coopaint.dao.impl.SQLData.COLUMN_ACL_GROUP;
 
-class SecurityDAOImpl implements SecurityDAO {
+class SecurityDAOImpl extends GenericDAO implements SecurityDAO {
     private static final String QUERY_RIGHTS_BY_RESOURCE = "SELECT * from acl WHERE resource=?";
 
     @Override

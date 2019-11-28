@@ -1,9 +1,9 @@
-package com.epam.coopaint.service;
+package com.epam.coopaint.service.impl;
 
-import com.epam.coopaint.service.impl.FileSystemServiceImpl;
-import com.epam.coopaint.service.impl.SecurityServiceImpl;
-import com.epam.coopaint.service.impl.SnapshotServiceImpl;
-import com.epam.coopaint.service.impl.UserServiceImpl;
+import com.epam.coopaint.service.FileSystemService;
+import com.epam.coopaint.service.SecurityService;
+import com.epam.coopaint.service.SnapshotService;
+import com.epam.coopaint.service.UserService;
 
 public final class ServiceFactory {
     private static final ServiceFactory instance = new ServiceFactory();

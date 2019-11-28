@@ -1,7 +1,9 @@
 package com.epam.coopaint.service.impl;
 
+import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.SnapshotDAO;
+import com.epam.coopaint.dao.impl.TransactionManager;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
@@ -12,7 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SnapshotServiceImpl implements SnapshotService {
+class SnapshotServiceImpl implements SnapshotService {
     private static final int SNAPSHOT_LINK_SIZE = 13;
     private Map<String, Snapshot> virtualStorage = new ConcurrentHashMap<>(); // <resource, ACL> - offloading DB
 
@@ -20,19 +22,25 @@ public class SnapshotServiceImpl implements SnapshotService {
         String link = Encryptor.getInstance().generateRandomHash(SNAPSHOT_LINK_SIZE);
         var newSnapshot = new Snapshot().setLink(link).setChatID(chat).setBoardID(board);
         virtualStorage.put(link, newSnapshot);
+
         if (useStorage) {
-            SnapshotDAO snapshotDAO = DAOFactory.getInstance().getSnapshotDAO();
+            var transaction = new TransactionManager();
+            SnapshotDAO snapshotDAO = DAOFactory.INSTANCE.createSnapshotDAO();
             try {
+                transaction.begin((GenericDAO) snapshotDAO);
                 snapshotDAO.putSnapshot(newSnapshot);
             } catch (DAOException e) {
+                transaction.rollback();
                 throw new ServiceException("Failed to save snapshot to storage.", e);
+            } finally {
+                transaction.end();
             }
         }
         return newSnapshot;
     }
 
     public Snapshot getSnapshot(String link) throws ServiceException {
-        SnapshotDAO snapshotDAO = DAOFactory.getInstance().getSnapshotDAO();
+        SnapshotDAO snapshotDAO = DAOFactory.INSTANCE.createSnapshotDAO();
         try {
             if (virtualStorage.containsKey(link)) {
                 return virtualStorage.get(link);

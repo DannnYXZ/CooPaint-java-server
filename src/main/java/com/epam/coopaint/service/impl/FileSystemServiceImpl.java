@@ -12,7 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class FileSystemServiceImpl implements FileSystemService {
+class FileSystemServiceImpl implements FileSystemService {
     // FIXME: move logic to dao level
     private static Logger logger = LogManager.getLogger();
     private static int FILE_NAME_LENGTH = 12;
@@ -20,7 +20,7 @@ public class FileSystemServiceImpl implements FileSystemService {
 
     @Override
     public String save(InputStream in, String targetDirectoryPath) throws ServiceException {
-        // in case of name collisions (probability = 1 / (61^12))
+        // in case of name collisions (probability = 1 / (61^LENGTH))
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
             String newFileName = Encryptor.getInstance().generateRandomHash(FILE_NAME_LENGTH);
             Path targetPath = Paths.get(targetDirectoryPath, newFileName);

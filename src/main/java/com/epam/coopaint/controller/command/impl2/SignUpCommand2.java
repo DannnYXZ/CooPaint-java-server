@@ -6,7 +6,7 @@ import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.epam.coopaint.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

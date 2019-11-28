@@ -7,7 +7,7 @@ import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.epam.coopaint.service.SnapshotService;
 import com.epam.coopaint.service.WSBoardService;
 import com.epam.coopaint.service.WSChatService;

@@ -1,7 +1,7 @@
 package com.epam.coopaint.controller;
 
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.epam.coopaint.service.UserService;
 
 import javax.servlet.*;

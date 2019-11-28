@@ -8,7 +8,7 @@ import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
-import com.epam.coopaint.service.ServiceFactory;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.epam.coopaint.util.StringUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

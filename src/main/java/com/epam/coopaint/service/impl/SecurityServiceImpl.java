@@ -19,13 +19,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
 import static com.epam.coopaint.service.impl.SecurityData.ACL_USE_CACHING;
 
-public class SecurityServiceImpl implements SecurityService {
+class SecurityServiceImpl implements SecurityService {
     // TODO: synchronize
     private static Logger logger = LogManager.getLogger();
     private Map<String, ACL> cacheACL = new ConcurrentHashMap<>(); // <resource, ACL> - offloading DB
 
     private ACL getACL(String resource) throws DAOException {
-        SecurityDAO securityDAO = DAOFactory.getInstance().getSecurityDAO();
+        SecurityDAO securityDAO = DAOFactory.INSTANCE.createSecurityDAO();
         if (ACL_USE_CACHING) {
             ACL acl = this.cacheACL.get(resource);
             if (acl == null) {

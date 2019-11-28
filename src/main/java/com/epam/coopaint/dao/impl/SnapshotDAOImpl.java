@@ -1,5 +1,6 @@
 package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.SnapshotDAO;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.exception.ConnectionPoolException;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
-class SnapshotDAOImpl implements SnapshotDAO {
+class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
     private static final String QUERY_GET_SNAPSHOT = "SELECT * FROM snapshot WHERE link=?";
 
     public Snapshot getSnapshot(String link) throws DAOException {

@@ -6,7 +6,7 @@ import com.epam.coopaint.exception.DAOException;
 
 import java.util.List;
 
-public interface UserDAO {
+public interface UserDAO  {
     User signIn(SignInUpBundle bundle) throws DAOException;
     User getUser(long id) throws DAOException;
     List<User> getUsers(String email) throws DAOException;
