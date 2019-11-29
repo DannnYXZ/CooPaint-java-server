@@ -3,11 +3,13 @@ package com.epam.coopaint.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Random;
+import java.util.UUID;
 
 public class Encryptor {
     private static Logger logger = LogManager.getLogger();
@@ -60,5 +62,12 @@ public class Encryptor {
             sb.append(ALPHA_NUM_STRING.charAt(random.nextInt(ALPHA_NUM_STRING.length())));
         }
         return sb.toString();
+    }
+
+    public static byte[] uuidToBytes(UUID uuid){
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
     }
 }

@@ -1,11 +1,12 @@
 package com.epam.coopaint.controller.command.impl2;
 
 import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.domain.Chat;
 import com.epam.coopaint.domain.Message;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.WSChatService;
+import com.epam.coopaint.service.WSChatService2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,12 +24,12 @@ public class ChatReadHistoryCommand2 implements Command2 {
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         UUID chatUUID = UUID.fromString(props.get(0));
         try {
-            var chatService = CDI.current().select(WSChatService.class).get();
-            List<Message> messages = chatService.readChatHistory(chatUUID);
+            var chatService = CDI.current().select(WSChatService2.class).get();
+            Chat chat = chatService.readRoom(chatUUID);
             var mapper = new ObjectMapper();
             ObjectNode jbody = mapper.createObjectNode();
             ArrayNode arr = mapper.createArrayNode();
-            for (Message msg : messages) {
+            for (Message msg : chat.getElements()) {
                 JsonNode jsonMessage = mapper.valueToTree(msg);
                 arr.add(jsonMessage);
             }

@@ -7,10 +7,8 @@ import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
+import com.epam.coopaint.service.*;
 import com.epam.coopaint.service.impl.ServiceFactory;
-import com.epam.coopaint.service.SnapshotService;
-import com.epam.coopaint.service.WSBoardService;
-import com.epam.coopaint.service.WSChatService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -38,23 +36,24 @@ public class GetSnapshotCommand2 implements Command2 {
         var wsSession = (Session) session;
         var httpSession = (HttpSession) wsSession.getUserProperties().get(SESSION_HTTP);
         var user = (User) httpSession.getAttribute(SESSION_USER);
-        var chatService = CDI.current().select(WSChatService.class).get();
-        var boardService = CDI.current().select(WSBoardService.class).get();
-
+        var chatService = CDI.current().select(WSChatService2.class).get();
+        var boardService = CDI.current().select(WSBoardService2.class).get();
+        // check session
         Snapshot snap = (Snapshot) wsSession.getUserProperties().get(SNAPSHOT);
         if (snap == null) {
+            // checking db
             SnapshotService snapshotService = ServiceFactory.getInstance().getSnapshotService();
             try {
-                snap = snapshotService.getSnapshot(snapshotLink);
-                chatService.connectTo(snap.getChatID().toString(), wsSession);
-                boardService.connectTo(snap.getBoardID().toString(), wsSession);
+                snap = snapshotService.readSnapshot(snapshotLink);
+                chatService.connectTo(user, snap.getChatUUID().toString(), wsSession);
+                boardService.connectTo(user, snap.getBoardUUID().toString(), wsSession);
             } catch (ServiceException e) {
                 // no snapshot, allocating chat and board
-                Pair<UUID, Set<Session>> chat = chatService.connectTo("", wsSession);
-                Pair<UUID, Set<Session>> board = boardService.connectTo("", wsSession);
-                // TODO: board
                 try {
-                    snap = snapshotService.createSnapshot(chat.getElement0(), board.getElement0(), false);
+                    Pair<UUID, Set<Session>> chat = chatService.connectTo(user, "", wsSession);
+                    Pair<UUID, Set<Session>> board = boardService.connectTo(user, "", wsSession);
+                    snap = snapshotService.createSnapshot(chat.getElement0(), board.getElement0(), user.isAuth());
+                    wsSession.getUserProperties().put(SNAPSHOT, snap);
                 } catch (ServiceException ex) {
                     throw new CommandException("Failed to store snapshot.", ex);
                 }
@@ -67,7 +66,7 @@ public class GetSnapshotCommand2 implements Command2 {
             ObjectNode jbody = mapper.createObjectNode();
             jbody.set("body", mapper.valueToTree(snap));
             jbody.put("action", "add-snapshot");
-            WSCommandResult result = (WSCommandResult) new WSCommandResult().setBody(mapper.writeValueAsString(jbody));
+            var result = (WSCommandResult) new WSCommandResult().setBody(mapper.writeValueAsString(jbody));
             return result.setReceivers(Set.of(wsSession));
         } catch (JsonProcessingException e) {
             throw new CommandException(e);

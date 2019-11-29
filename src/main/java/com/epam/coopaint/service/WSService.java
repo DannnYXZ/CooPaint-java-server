@@ -1,32 +1,26 @@
 package com.epam.coopaint.service;
 
-import com.epam.coopaint.dao.BoardDAO;
 import com.epam.coopaint.dao.GenericDAO;
-import com.epam.coopaint.dao.impl.DAOFactory;
+import com.epam.coopaint.dao.impl.RoomDAO;
 import com.epam.coopaint.dao.impl.TransactionManager;
-import com.epam.coopaint.domain.Board;
 import com.epam.coopaint.domain.Pair;
+import com.epam.coopaint.domain.Room;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.domain.VShape;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.websocket.Session;
 import java.util.*;
+import java.util.function.Supplier;
 
-@ApplicationScoped // access is sequential (transactions not supported)
-public class WSBoardService {
+public class WSService<R extends Room<E>, E> {
     private static Logger logger = LogManager.getLogger();
-    private final Map<UUID, Board> boards = new HashMap<>(); // <chat, messages> ~ persistent
+    private final Map<UUID, R> room = new HashMap<>(); // <chat, messages> ~ persistent
     private final Map<UUID, Set<Session>> sessions = new HashMap<>(); // <chat, connections> ~ dynamic
-
-    private Board createEmptyBoard() {
-        //return new Board().setName("Unnamed Board").setUuid(UUID.randomUUID());
-        return null;
-    }
+    Supplier<R> roomSupplier;
+    Supplier<RoomDAO<R>> daoSupplier;
 
     // base method - must be called first
     public Pair<UUID, Set<Session>> connectTo(User user, String boardUUID, Session session) throws ServiceException {
@@ -37,27 +31,27 @@ public class WSBoardService {
             uuid = UUID.randomUUID();
         }
         // check cache
-        if (!boards.containsKey(uuid)) {
+        if (!room.containsKey(uuid)) {
             // check db
-            BoardDAO boardDAO = DAOFactory.INSTANCE.createBoardDAO();
+            RoomDAO<R> boardDAO = daoSupplier.get();
             var transaction = new TransactionManager();
             try {
                 transaction.begin((GenericDAO) boardDAO);
-                //Board board = boardDAO.readBoard(uuid);
-                Board board = null;
+                R room = boardDAO.readRoom(uuid);
                 transaction.commit();
-                boards.put(uuid, board); // put to cache
+                this.room.put(uuid, room); // put to cache
             } catch (DAOException e) {
                 // no board -> create
                 try {
-                    //Board newBoard = createEmptyBoard().setCreator(user);
-                    Board newBoard = null;
+                    R newBoard = roomSupplier.get();
+                    newBoard.setCreator(user);
+                    newBoard.setUuid(UUID.randomUUID());
                     if (user.isAuth()) {
                         // storing only registered users
-                        //boardDAO.createBoard(newBoard);
+                        boardDAO.createRoom(newBoard);
                         transaction.commit();
                     }
-                    boards.put(uuid, newBoard); // put to cache
+                    room.put(uuid, newBoard); // put to cache
                     uuid = newBoard.getUuid();
                 } catch (DAOException ex) {
                     transaction.rollback();
@@ -72,9 +66,9 @@ public class WSBoardService {
         return new Pair<>(uuid, sessions);
     }
 
-    public Board readBoard(UUID boardUUID) throws ServiceException {
+    public R readRoom(UUID boardUUID) throws ServiceException {
         // check only cache (coz connectTo lifted board to cache)
-        Board board = boards.get(boardUUID);
+        R board = room.get(boardUUID);
         if (board != null) {
             return board;
         } else {
@@ -84,14 +78,14 @@ public class WSBoardService {
 
     public void saveBoard(UUID boardUUID) throws ServiceException { // FIXME: private
         // saving from virtual board
-        Board board = boards.get(boardUUID);
+        R board = room.get(boardUUID);
         if (board != null && board.getCreator().isAuth()) {
-            BoardDAO boardDAO = DAOFactory.INSTANCE.createBoardDAO();
+            RoomDAO<R> boardDAO = daoSupplier.get();
             var transaction = new TransactionManager();
             try {
                 transaction.begin((GenericDAO) boardDAO);
                 // saving board == update
-                //boardDAO.updateBoard(board);
+                boardDAO.updateRoom(board);
                 transaction.commit();
 
             } catch (DAOException e) {
@@ -116,19 +110,18 @@ public class WSBoardService {
         }
     }
 
-    public Pair<List<VShape>, Set<Session>> addShapes(UUID boardUUID, List<VShape> elements) {
-        boards.get(boardUUID).getElements().addAll(elements);
+    public Pair<List<E>, Set<Session>> addElements(UUID boardUUID, List<E> elements) {
+        room.get(boardUUID).getElements().addAll(elements);
         Set<Session> sessions = this.sessions.get(boardUUID);
         return new Pair<>(elements, sessions);
     }
 
-    public List<Board> getUserBoardsMeta(UUID userUUID) throws ServiceException {
-        BoardDAO boardDAO = DAOFactory.INSTANCE.createBoardDAO();
+    public List<R> getUserBoardsMeta(UUID userUUID) throws ServiceException {
+        RoomDAO<R> boardDAO = daoSupplier.get();
         var transaction = new TransactionManager();
         try {
             transaction.begin((GenericDAO) boardDAO);
-  //          return boardDAO.readUserBoardsMeta(userUUID);
-            return null;
+            return boardDAO.readUserRoomsMeta(userUUID);
         } catch (DAOException e) {
             transaction.rollback();
             throw new ServiceException("Failed to get user boards.", e);

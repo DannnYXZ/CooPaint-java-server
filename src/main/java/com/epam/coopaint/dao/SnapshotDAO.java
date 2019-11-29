@@ -4,6 +4,6 @@ import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.exception.DAOException;
 
 public interface SnapshotDAO {
-    Snapshot getSnapshot(String link) throws DAOException;
-    Snapshot putSnapshot(Snapshot snapshot) throws DAOException;
+    Snapshot readSnapshot(String link) throws DAOException;
+    Snapshot createSnapshot(Snapshot snapshot) throws DAOException;
 }

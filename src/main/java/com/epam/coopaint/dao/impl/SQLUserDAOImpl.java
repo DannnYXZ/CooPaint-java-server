@@ -26,10 +26,10 @@ import static com.epam.coopaint.dao.impl.SQLData.*;
 class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     private static Logger logger = LogManager.getLogger();
     private static final int VALIDATION_LINK_LENGTH = 64;
-    private static final String QUERY_ADD_USER = "INSERT INTO user (name, email, hash, salt) VALUES (?, ?, ?, ?)";
-    private static final String QUERY_FETCH_USER_BY_EMAIL = "SELECT * FROM user WHERE email=?";
-    private static final String QUERY_FETCH_USER_BY_ID = "SELECT * FROM user WHERE id=?";
-    private static final String QUERY_UPDATE_USER_AVATAR = "UPDATE user SET avatar=? WHERE id=?";
+    private static final String QUERY_USER_ADD = "INSERT INTO user (name, email, hash, salt) VALUES (?, ?, ?, ?)";
+    private static final String QUERY_USER_FETCH_BY_EMAIL = "SELECT * FROM user WHERE email=?";
+    private static final String QUERY_USER_FETCH_BY_ID = "SELECT * FROM user WHERE id=?";
+    private static final String QUERY_USER_UPDATE_AVATAR = "UPDATE user SET avatar=? WHERE id=?";
 
     @Override
     public User signIn(SignInUpBundle bundle) throws DAOException {
@@ -50,7 +50,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     @Override
     public User getUser(long id) throws DAOException {
         try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_FETCH_USER_BY_ID)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_ID)) {
             preparedStatement.setLong(1, id);
             try (ResultSet result = preparedStatement.executeQuery()) {
                 List<User> users = mapToUserList(result);
@@ -67,7 +67,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
 
     @Override
     public List<User> getUsers(String email) throws DAOException {
-        try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_FETCH_USER_BY_EMAIL)) {
+        try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_EMAIL)) {
             selectStatement.setString(1, email);
             try (ResultSet result = selectStatement.executeQuery()) {
                 List<User> users = mapToUserList(result);
@@ -80,7 +80,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
 
     @Override
     public void signUp(SignInUpBundle bundle) throws DAOException {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_ADD_USER)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_ADD)) {
             preparedStatement.setString(1, bundle.getEmail());
             preparedStatement.setString(2, bundle.getEmail());
             Encryptor encryptor = Encryptor.getInstance();
@@ -103,7 +103,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
 
     @Override
     public void updateAvatar(long userId, String newAvatarPath) throws DAOException {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_UPDATE_USER_AVATAR)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_UPDATE_AVATAR)) {
             preparedStatement.setString(1, newAvatarPath);
             preparedStatement.setLong(2, userId);
             int n = preparedStatement.executeUpdate();
@@ -121,13 +121,13 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
         List<User> users = new ArrayList<>();
         while (resultSet.next()) {
             var user = new User();
-            user.setId(resultSet.getLong(COLUMN_ID));
-            user.setName(resultSet.getString(COLUMN_NAME));
-            user.setEmail(resultSet.getString(COLUMN_EMAIL));
-            user.setHash(resultSet.getBytes(COLUMN_HASH));
-            user.setSalt(resultSet.getBytes(COLUMN_SALT));
-            user.setAvatar(resultSet.getString(COLUMN_AVATAR));
-            user.setLang(LangPack.valueOf(resultSet.getString(COLUMN_LANG)));
+            user.setId(resultSet.getLong(COLUMN_USER_ID));
+            user.setName(resultSet.getString(COLUMN_USER_NAME));
+            user.setEmail(resultSet.getString(COLUMN_USER_EMAIL));
+            user.setHash(resultSet.getBytes(COLUMN_USER_HASH));
+            user.setSalt(resultSet.getBytes(COLUMN_USER_SALT));
+            user.setAvatar(resultSet.getString(COLUMN_USER_AVATAR));
+            user.setLang(LangPack.valueOf(resultSet.getString(COLUMN_USER_LANG)));
             user.setAuth(true);
             users.add(user);
         }

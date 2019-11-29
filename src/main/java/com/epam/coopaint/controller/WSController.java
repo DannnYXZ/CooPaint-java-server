@@ -2,8 +2,8 @@ package com.epam.coopaint.controller;
 
 import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.WSCommandResult;
-import com.epam.coopaint.service.WSBoardService;
-import com.epam.coopaint.service.WSChatService;
+import com.epam.coopaint.service.WSBoardService2;
+import com.epam.coopaint.service.WSChatService2;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,9 +25,9 @@ public class WSController {
     private static Logger logger = LogManager.getLogger();
 
     @Inject
-    private WSChatService chatService;
+    private WSChatService2 chatService;
     @Inject
-    private WSBoardService boardService;
+    private WSBoardService2 boardService;
 
     @OnOpen
     public void open(Session session, EndpointConfig config) {

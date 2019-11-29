@@ -16,7 +16,7 @@ public class Snapshot {
         return this;
     }
 
-    public UUID getChatID() {
+    public UUID getChatUUID() {
         return chatID;
     }
 
@@ -25,7 +25,7 @@ public class Snapshot {
         return this;
     }
 
-    public UUID getBoardID() {
+    public UUID getBoardUUID() {
         return boardID;
     }
 

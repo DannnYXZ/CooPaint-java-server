@@ -6,6 +6,7 @@ import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.exception.ConnectionPoolException;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.pool.ConnectionPoolImpl;
+import com.epam.coopaint.util.Encryptor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,11 +18,14 @@ import java.util.List;
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
 class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
-    private static final String QUERY_GET_SNAPSHOT = "SELECT * FROM snapshot WHERE link=?";
+    private static final String QUERY_CREATE_SNAPSHOT = "INSERT INTO snapshot (link, board_id, chat_id) VALUES (?, " +
+            "(SELECT id FROM chat WHERE uuid=?)," +
+            " (SELECT id FROM board WHERE uuid=?))";
+    private static final String QUERY_READ_SNAPSHOT = "SELECT * FROM snapshot WHERE link=?";
 
-    public Snapshot getSnapshot(String link) throws DAOException {
+    public Snapshot readSnapshot(String link) throws DAOException {
         try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_GET_SNAPSHOT)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_READ_SNAPSHOT)) {
             preparedStatement.setString(1, link);
             try (ResultSet result = preparedStatement.executeQuery()) {
                 List<Snapshot> snapshots = mapToSnapshotList(result);
@@ -37,8 +41,16 @@ class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
     }
 
     @Override
-    public Snapshot putSnapshot(Snapshot snapshot) throws DAOException {
-        return null;
+    public Snapshot createSnapshot(Snapshot snapshot) throws DAOException {
+        try (PreparedStatement statement = connection.prepareStatement(QUERY_CREATE_SNAPSHOT)) {
+            statement.setString(1, snapshot.getLink());
+            statement.setBytes(2, Encryptor.uuidToBytes(snapshot.getChatUUID()));
+            statement.setBytes(3, Encryptor.uuidToBytes(snapshot.getBoardUUID()));
+            statement.execute();
+            return snapshot;
+        } catch (SQLException e) {
+            throw new DAOException(e);
+        }
     }
 
     private List<Snapshot> mapToSnapshotList(ResultSet resultSet) throws SQLException {

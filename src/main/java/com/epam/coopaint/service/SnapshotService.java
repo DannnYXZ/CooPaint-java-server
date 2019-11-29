@@ -7,5 +7,5 @@ import java.util.UUID;
 
 public interface SnapshotService {
     Snapshot createSnapshot(UUID chat, UUID board, boolean useStorage) throws ServiceException;
-    Snapshot getSnapshot(String link) throws ServiceException;
+    Snapshot readSnapshot(String link) throws ServiceException;
 }

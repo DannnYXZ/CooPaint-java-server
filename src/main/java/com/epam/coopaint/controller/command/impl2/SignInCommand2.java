@@ -27,18 +27,18 @@ public class SignInCommand2 implements Command2 {
 
     @Override
     public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
-        var mapper = new ObjectMapper();
         UserService userService = ServiceFactory.getInstance().getUserService();
         try {
+            var mapper = new ObjectMapper();
             try {
-                var httpSession = (HttpSession) session;
                 SignInUpBundle signInUpBundle = mapper.readValue(body, SignInUpBundle.class);
                 User user = userService.singIn(signInUpBundle);
                 if (!user.getAvatar().isEmpty()) {
                     user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
                 }
+                var httpSession = (HttpSession) session;
                 String jsonUser = mapper.writeValueAsString(user);
-                httpSession.setAttribute(SESSION_USER, user);
+                httpSession.setAttribute(SESSION_USER, user); // WS session desync
                 return new CommandResult().setBody(jsonUser);
             } catch (ServiceException e) {
                 ObjectNode err = mapper.createObjectNode().put("body", "sign.in.error.no.such");
