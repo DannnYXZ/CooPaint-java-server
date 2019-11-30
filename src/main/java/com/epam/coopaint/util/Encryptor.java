@@ -70,4 +70,11 @@ public class Encryptor {
         bb.putLong(uuid.getLeastSignificantBits());
         return bb.array();
     }
+
+    public static UUID bytesToUuid(byte[] bytes) {
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        long firstLong = bb.getLong();
+        long secondLong = bb.getLong();
+        return new UUID(firstLong, secondLong);
+    }
 }

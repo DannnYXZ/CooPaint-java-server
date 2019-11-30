@@ -2,12 +2,9 @@ package com.epam.coopaint.main;
 
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
-import com.epam.coopaint.util.PropertyLoader;
 import com.epam.coopaint.util.StringUtil;
 
 import java.util.List;
-import java.util.Properties;
-import java.util.UUID;
 
 public class Polygon {
     public static void main(String[] args) {

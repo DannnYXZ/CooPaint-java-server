@@ -9,7 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class WSChatService2 extends WSService<Chat, Message> {
     public WSChatService2() {
-        daoSupplier = SQLChatDAOImpl::new;
+        roomDaoSupplier = SQLChatDAOImpl::new;
         roomSupplier = Chat::new;
     }
 }

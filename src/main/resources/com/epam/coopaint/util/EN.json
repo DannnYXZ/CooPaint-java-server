@@ -24,5 +24,6 @@
   "sign.up.error.exists": "User with such email already exists",
   "account": "Account",
   "name": "Name",
-  "password.change": "Change password"
+  "password.change": "Change password",
+  "boards.my": "My boards"
 }

@@ -6,8 +6,8 @@ import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.impl.ServiceFactory;
 import com.epam.coopaint.service.UserService;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -42,7 +42,7 @@ public class SignInCommand2 implements Command2 {
                 return new CommandResult().setBody(jsonUser);
             } catch (ServiceException e) {
                 ObjectNode err = mapper.createObjectNode().put("body", "sign.in.error.no.such");
-                logger.error("Not registered user tried to sign in.");
+                logger.error("Not registered user tried to sign in.", e);
                 return new CommandResult().setCode(SC_NOT_FOUND).setBody(mapper.writeValueAsString(err));
             }
         } catch (JsonProcessingException e) {

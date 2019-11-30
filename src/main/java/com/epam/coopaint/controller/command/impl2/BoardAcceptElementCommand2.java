@@ -22,11 +22,9 @@ public class BoardAcceptElementCommand2 implements Command2 {
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         try {
             var mapper = new ObjectMapper();
-            var boardService = CDI.current().select(WSBoardService2.class).get();
-
-
             List<VShape> messages = Arrays.asList(mapper.readValue(body, VShape[].class));
             UUID boardUUID = UUID.fromString(props.get(0));
+            var boardService = CDI.current().select(WSBoardService2.class).get();
             Pair<List<VShape>, Set<Session>> processedElements = boardService.addElements(boardUUID, messages); // calc time and from
             ObjectNode jbody = mapper.createObjectNode();
             jbody.put("action", "add-elements");

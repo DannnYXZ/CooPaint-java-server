@@ -5,10 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-class RSMapper<T> {
-    private List<RsToObjectMapper<T>> mappings;
+interface RsToObject<T> {
+    void apply(ResultSet rs, T target) throws Exception;
+}
 
-    RSMapper(List<RsToObjectMapper<T>> mappings) {
+class RsToObjectListMapper<T> {
+    private List<RsToObject<T>> mappings;
+
+    RsToObjectListMapper(List<RsToObject<T>> mappings) {
         // mapping functions
         this.mappings = mappings;
     }

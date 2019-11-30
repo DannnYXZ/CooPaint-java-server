@@ -1,8 +1,8 @@
 package com.epam.coopaint.service.impl;
 
+import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
-import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.impl.TransactionManager;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;

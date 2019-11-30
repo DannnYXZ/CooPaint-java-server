@@ -32,8 +32,9 @@ public class User {
         return id;
     }
 
-    public void setId(long id) {
+    public User setId(long id) {
         this.id = id;
+        return this;
     }
 
     public String getName() {
@@ -84,7 +85,7 @@ public class User {
         return avatar;
     }
 
-    @JsonProperty(value="isAuth")
+    @JsonProperty(value = "isAuth")
     public boolean isAuth() {
         return isAuth;
     }

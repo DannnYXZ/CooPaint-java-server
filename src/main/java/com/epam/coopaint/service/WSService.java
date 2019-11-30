@@ -1,6 +1,8 @@
 package com.epam.coopaint.service;
 
 import com.epam.coopaint.dao.GenericDAO;
+import com.epam.coopaint.dao.UserDAO;
+import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.impl.RoomDAO;
 import com.epam.coopaint.dao.impl.TransactionManager;
 import com.epam.coopaint.domain.Pair;
@@ -17,45 +19,49 @@ import java.util.function.Supplier;
 
 public class WSService<R extends Room<E>, E> {
     private static Logger logger = LogManager.getLogger();
-    private final Map<UUID, R> room = new HashMap<>(); // <chat, messages> ~ persistent
+    private final Map<UUID, R> rooms = new HashMap<>(); // <chat, messages> ~ persistent
     private final Map<UUID, Set<Session>> sessions = new HashMap<>(); // <chat, connections> ~ dynamic
     Supplier<R> roomSupplier;
-    Supplier<RoomDAO<R>> daoSupplier;
+    Supplier<RoomDAO<R>> roomDaoSupplier;
 
     // base method - must be called first
-    public Pair<UUID, Set<Session>> connectTo(User user, String boardUUID, Session session) throws ServiceException {
+    public Pair<UUID, Set<Session>> connectTo(User user, String roomUUID, Session session) throws ServiceException {
         UUID uuid;
         try {
-            uuid = UUID.fromString(boardUUID);
+            uuid = UUID.fromString(roomUUID);
         } catch (IllegalArgumentException e) {
             uuid = UUID.randomUUID();
         }
         // check cache
-        if (!room.containsKey(uuid)) {
+        if (!rooms.containsKey(uuid)) {
             // check db
-            RoomDAO<R> boardDAO = daoSupplier.get();
+            RoomDAO<R> roomDAO = roomDaoSupplier.get();
+            UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
             var transaction = new TransactionManager();
             try {
-                transaction.begin((GenericDAO) boardDAO);
-                R room = boardDAO.readRoom(uuid);
+                transaction.begin((GenericDAO) roomDAO, (GenericDAO) userDAO);
+                R room = roomDAO.readRoom(uuid);
+                User creator = userDAO.getUser(room.getCreator().getId());
+                room.setCreator(creator);
+                // get user
                 transaction.commit();
-                this.room.put(uuid, room); // put to cache
+                this.rooms.put(uuid, room); // put to cache
             } catch (DAOException e) {
                 // no board -> create
                 try {
-                    R newBoard = roomSupplier.get();
-                    newBoard.setCreator(user);
-                    newBoard.setUuid(UUID.randomUUID());
+                    R newRoom = roomSupplier.get();
+                    newRoom.setCreator(user);
+                    newRoom.setUuid(UUID.randomUUID());
                     if (user.isAuth()) {
                         // storing only registered users
-                        boardDAO.createRoom(newBoard);
+                        roomDAO.createRoom(newRoom);
                         transaction.commit();
                     }
-                    room.put(uuid, newBoard); // put to cache
-                    uuid = newBoard.getUuid();
+                    rooms.put(uuid, newRoom); // put to cache
+                    uuid = newRoom.getUuid();
                 } catch (DAOException ex) {
                     transaction.rollback();
-                    throw new ServiceException("Failed to create new board.", ex);
+                    throw new ServiceException("Failed to create new room.", ex);
                 }
             } finally {
                 transaction.end();
@@ -66,28 +72,28 @@ public class WSService<R extends Room<E>, E> {
         return new Pair<>(uuid, sessions);
     }
 
-    public R readRoom(UUID boardUUID) throws ServiceException {
+    public R readRoom(UUID roomUUID) throws ServiceException {
         // check only cache (coz connectTo lifted board to cache)
-        R board = room.get(boardUUID);
-        if (board != null) {
-            return board;
+        R room = this.rooms.get(roomUUID);
+        if (room != null) {
+            return room;
         } else {
-            throw new ServiceException("No such board: " + boardUUID);
+            throw new ServiceException("No such room: " + roomUUID);
         }
     }
 
-    public void saveBoard(UUID boardUUID) throws ServiceException { // FIXME: private
-        // saving from virtual board
-        R board = room.get(boardUUID);
-        if (board != null && board.getCreator().isAuth()) {
-            RoomDAO<R> boardDAO = daoSupplier.get();
+    private void saveRoom(UUID roomUUID) throws ServiceException {
+        // saving from virtual room
+        R room = rooms.get(roomUUID);
+        // if room was created by registered user, guest drawings will be saved too
+        if (room != null && room.getCreator().isAuth()) {
+            RoomDAO<R> roomDAO = roomDaoSupplier.get();
             var transaction = new TransactionManager();
             try {
-                transaction.begin((GenericDAO) boardDAO);
+                transaction.begin((GenericDAO) roomDAO);
                 // saving board == update
-                boardDAO.updateRoom(board);
+                roomDAO.updateRoom(room);
                 transaction.commit();
-
             } catch (DAOException e) {
                 transaction.rollback();
                 throw new ServiceException("Failed to save board", e);
@@ -97,12 +103,36 @@ public class WSService<R extends Room<E>, E> {
         }
     }
 
+    public void deleteRoom(UUID roomUUID) throws ServiceException {
+        // check for cached room
+        R room = rooms.get(roomUUID);
+        // wipe from virtual space
+        sessions.remove(roomUUID);
+        rooms.remove(roomUUID);
+        if (room != null && !room.getCreator().isAuth()) {
+            // no need to access db if room is created by guest
+            return;
+        }
+        var transaction = new TransactionManager();
+        RoomDAO<R> roomDAO = roomDaoSupplier.get();
+        try {
+            transaction.begin((GenericDAO) roomDAO);
+            roomDAO.deleteRoom(roomUUID);
+            transaction.commit();
+        } catch (DAOException e) {
+            transaction.rollback();
+            throw new ServiceException("Failed to delete room: " + roomUUID, e);
+        } finally {
+            transaction.end();
+        }
+    }
+
     public void removeSession(Session session) {
         for (Map.Entry<UUID, Set<Session>> elem : sessions.entrySet()) {
             Set<Session> sessions = elem.getValue();
             if (sessions.remove(session)) {
                 try {
-                    saveBoard(elem.getKey());
+                    saveRoom(elem.getKey());
                 } catch (ServiceException e) {
                     logger.error("Failed to save board: " + elem.getKey());
                 }
@@ -110,18 +140,18 @@ public class WSService<R extends Room<E>, E> {
         }
     }
 
-    public Pair<List<E>, Set<Session>> addElements(UUID boardUUID, List<E> elements) {
-        room.get(boardUUID).getElements().addAll(elements);
-        Set<Session> sessions = this.sessions.get(boardUUID);
+    public Pair<List<E>, Set<Session>> addElements(UUID roomUUID, List<E> elements) {
+        rooms.get(roomUUID).getElements().addAll(elements);
+        Set<Session> sessions = this.sessions.get(roomUUID);
         return new Pair<>(elements, sessions);
     }
 
     public List<R> getUserBoardsMeta(UUID userUUID) throws ServiceException {
-        RoomDAO<R> boardDAO = daoSupplier.get();
+        RoomDAO<R> roomDAO = roomDaoSupplier.get();
         var transaction = new TransactionManager();
         try {
-            transaction.begin((GenericDAO) boardDAO);
-            return boardDAO.readUserRoomsMeta(userUUID);
+            transaction.begin((GenericDAO) roomDAO);
+            return roomDAO.readUserRoomsMeta(userUUID);
         } catch (DAOException e) {
             transaction.rollback();
             throw new ServiceException("Failed to get user boards.", e);

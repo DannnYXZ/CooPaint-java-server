@@ -4,7 +4,6 @@ import com.epam.coopaint.controller.command.Command2;
 import com.epam.coopaint.domain.CommandResult;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
 public class WrongRequestCommand2 implements Command2 {

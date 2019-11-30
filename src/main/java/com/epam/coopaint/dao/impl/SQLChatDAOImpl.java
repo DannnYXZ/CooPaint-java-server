@@ -2,6 +2,7 @@ package com.epam.coopaint.dao.impl;
 
 import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.domain.Chat;
+import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.util.Encryptor;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,14 +16,16 @@ import java.util.UUID;
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
 public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
-    private static String QUERY_CHAT_CREATE = "INSERT INTO chat (uuid, creator) VALUES (?,?)";
+    private static String QUERY_CHAT_CREATE = "INSERT INTO chat (chat_uuid, chat_creator) VALUES (?,?)";
     private static String QUERY_CHAT_READ = "SELECT * FROM chat WHERE uuid=?";
-    private static String QUERY_CHAT_UPDATE = "UPDATE chat SET name=COALESCE(?, name)," +
+    private static String QUERY_CHAT_UPDATE = "UPDATE chat SET chat_name=COALESCE(?, chat_name)," +
             "data=COALESCE(?, data) WHERE uuid=?";
-    private static String QUERY_CHATS_BY_OWNER = "SELECT (uuid) FROM chat WHERE creator IN (SELECT (id) FROM user WHERE uuid=?)";
-    private static String QUERY_CHAT_DELETE = "DELETE ";
+    private static String QUERY_CHATS_BY_OWNER = "SELECT (chat_uuid) FROM chat WHERE chat_creator IN (SELECT (chat_id) FROM user WHERE chat_uuid=?)";;
 
-    //
+    static RsToObject<Chat> MAPPER_CHAT_ID = (s, c) -> c.setId(s.getLong(COLUMN_CHAT_ID));
+    static RsToObject<Chat> MAPPER_CHAT_UUID = (s, c) -> c.setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_CHAT_UUID)));
+    static RsToObject<Chat> MAPPER_CHAT_CREATOR = (s, c) -> c.setCreator(new User().setId(s.getLong(COLUMN_CHAT_CREATOR_ID)));
+
     @Override
     public Chat createRoom(Chat Chat) throws DAOException {
         try (PreparedStatement statement = connection.prepareStatement(QUERY_CHAT_CREATE, Statement.RETURN_GENERATED_KEYS)) {
@@ -44,35 +47,44 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
     }
 
     @Override
-    public Chat readRoom(UUID ChatUUID) throws DAOException {
+    public Chat readRoom(UUID chatUUID) throws DAOException {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_CHAT_READ)) {
-            selectStatement.setObject(1, ChatUUID, Types.BINARY);
+            selectStatement.setBytes(1, Encryptor.uuidToBytes(chatUUID));
             try (ResultSet result = selectStatement.executeQuery()) {
-                RSMapper<Chat> mapper = new RSMapper<>(Arrays.asList(SQLChatDAOImpl.ChatMapper.values()));
+                RsToObjectListMapper<Chat> mapper = new RsToObjectListMapper<>(Arrays.asList(
+                        MAPPER_CHAT_ID,
+                        MAPPER_CHAT_UUID,
+                        MAPPER_CHAT_CREATOR
+                ));
                 List<Chat> chats = mapper.mapToList(result, Chat::new);
                 if (chats.isEmpty()) {
-                    throw new DAOException("No Chat with uuid: " + ChatUUID);
+                    throw new DAOException("No chat with uuid: " + chatUUID);
                 }
                 return chats.get(0);
             }
         } catch (Exception e) {
-            throw new DAOException("Failed to get Chat by uuid: " + ChatUUID, e);
+            throw new DAOException("Failed to get chat by uuid: " + chatUUID, e);
         }
     }
 
     @Override
-    public Chat updateRoom(Chat Chat) throws DAOException {
+    public Chat updateRoom(Chat room) throws DAOException {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_CHAT_UPDATE)) {
-            selectStatement.setString(1, new ObjectMapper().writeValueAsString(Chat.getElements()));
-            selectStatement.setBytes(2, Encryptor.uuidToBytes(Chat.getUuid()));
+            selectStatement.setString(1, new ObjectMapper().writeValueAsString(room.getElements()));
+            selectStatement.setBytes(2, Encryptor.uuidToBytes(room.getUuid()));
             int n = selectStatement.executeUpdate();
             if (n == 1) {
-                return Chat;
+                return room;
             }
-            throw new DAOException("Failed to update Chat: " + Chat.getUuid());
+            throw new DAOException("Failed to update Chat: " + room.getUuid());
         } catch (SQLException | JsonProcessingException e) {
-            throw new DAOException("Failed to update Chat: " + Chat.getUuid(), e);
+            throw new DAOException("Failed to update Chat: " + room.getUuid(), e);
         }
+    }
+
+    @Override
+    public void deleteRoom(UUID roomUUID) {
+        // done by board dao
     }
 
     @Override
@@ -80,7 +92,7 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_CHATS_BY_OWNER)) {
             selectStatement.setObject(1, userUUID, Types.BINARY);
             try (ResultSet result = selectStatement.executeQuery()) {
-                RSMapper<Chat> mapper = new RSMapper<>(List.of(SQLChatDAOImpl.ChatMapper.CHAT_UUID));
+                RsToObjectListMapper<Chat> mapper = new RsToObjectListMapper<>(List.of(MAPPER_CHAT_UUID));
                 List<Chat> Chats = mapper.mapToList(result, Chat::new);
                 return Chats;
             }
@@ -88,24 +100,4 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
             throw new DAOException("Failed to get Chat of: " + userUUID, e);
         }
     }
-
-    private enum ChatMapper implements RsToObjectMapper<Chat> {
-        CHAT_ID((s, b) -> b.setId(s.getLong(COLUMN_CHAT_ID))),
-        CHAT_UUID((s, b) -> b.setUuid(UUID.nameUUIDFromBytes(s.getBytes(COLUMN_CHAT_UUID))));
-        public RsToObjectMapper func;
-
-        ChatMapper(RsToObjectMapper<Chat> func) {
-            this.func = func;
-        }
-
-        @Override
-        public void apply(ResultSet rs, Chat board) throws DAOException {
-            try {
-                func.apply(rs, board);
-            } catch (Exception e) {
-                throw new DAOException("Failed to map.", e);
-            }
-        }
-    }
-
 }

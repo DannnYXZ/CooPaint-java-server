@@ -10,7 +10,10 @@ import com.epam.coopaint.util.Encryptor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -18,12 +21,19 @@ import java.util.UUID;
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
 public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Board> {
-    private static String QUERY_BOARD_CREATE = "INSERT INTO board  (uuid, name, data, creator) VALUES (?, ?, ?, ?)";
-    private static String QUERY_BOARD_READ = "SELECT * FROM board WHERE uuid=?";
-    private static String QUERY_BOARD_UPDATE = "UPDATE board SET name=COALESCE(?, name)," +
-            "data=COALESCE(?, data) WHERE uuid=?";
-    private static String QUERY_BOARDS_BY_OWNER = "SELECT (uuid, name) FROM board WHERE creator IN (SELECT (id) FROM user WHERE uuid=?)";
-    private static String QUERY_BOARD_DELETE = "DELETE ";
+    private static String QUERY_BOARD_CREATE = "INSERT INTO board  (board_uuid, board_name, board_data, board_creator) VALUES (?, COALESCE(?, board_name), ?, ?)";
+    private static String QUERY_BOARD_READ = "SELECT * FROM board WHERE board_uuid=?";
+    private static String QUERY_BOARD_UPDATE = "UPDATE board SET board_name=COALESCE(?, board_name)," +
+            "board_data=COALESCE(?, board_data) WHERE board_uuid=?";
+    private static String QUERY_BOARDS_BY_OWNER = "SELECT board.board_uuid, board.board_name FROM board JOIN user u ON board.board_creator = u.user_id AND u.user_uuid=?";
+    private static String QUERY_BOARD_DELETE = "DELETE FROM board WHERE board_uuid=?";
+
+    static RsToObject<Board> MAPPER_BOARD_ID = (s, b) -> b.setId(s.getLong(COLUMN_BOARD_ID));
+    static RsToObject<Board> MAPPER_BOARD_UUID = (s, b) -> b.setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_BOARD_UUID)));
+    static RsToObject<Board> MAPPER_BOARD_NAME = (s, b) -> b.setName(s.getString(COLUMN_BOARD_NAME));
+    static RsToObject<Board> MAPPER_BOARD_CREATOR = (s, b) -> b.setCreator(new User().setId(s.getLong(COLUMN_BOARD_CREATOR_ID)));
+    static RsToObject<Board> MAPPER_BOARD_ELEMENTS = (s, b) -> b.getElements().addAll(Arrays.asList(new ObjectMapper()
+            .readValue(s.getString(COLUMN_BOARD_DATA), VShape[].class)));
 
     @Override
     public Board createRoom(Board board) throws DAOException {
@@ -49,9 +59,14 @@ public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Boa
     @Override
     public Board readRoom(UUID boardUUID) throws DAOException {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_BOARD_READ)) {
-            selectStatement.setObject(1, boardUUID, Types.BINARY);
+            selectStatement.setBytes(1, Encryptor.uuidToBytes(boardUUID));
             try (ResultSet result = selectStatement.executeQuery()) {
-                RSMapper<Board> mapper = new RSMapper<>(Arrays.asList(BoardMapper.values()));
+                RsToObjectListMapper<Board> mapper = new RsToObjectListMapper<>(List.of(
+                        MAPPER_BOARD_ID,
+                        MAPPER_BOARD_NAME,
+                        MAPPER_BOARD_CREATOR,
+                        MAPPER_BOARD_CREATOR,
+                        MAPPER_BOARD_ELEMENTS));
                 List<Board> boards = mapper.mapToList(result, Board::new);
                 if (boards.isEmpty()) {
                     throw new DAOException("No board with uuid: " + boardUUID);
@@ -64,18 +79,28 @@ public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Boa
     }
 
     @Override
-    public Board updateRoom(Board board) throws DAOException {
+    public Board updateRoom(Board room) throws DAOException {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_BOARD_UPDATE)) {
-            selectStatement.setString(1, board.getName());
-            selectStatement.setString(2, new ObjectMapper().writeValueAsString(board.getElements()));
-            selectStatement.setBytes(3, Encryptor.uuidToBytes(board.getUuid()));
+            selectStatement.setString(1, room.getName());
+            selectStatement.setString(2, new ObjectMapper().writeValueAsString(room.getElements()));
+            selectStatement.setBytes(3, Encryptor.uuidToBytes(room.getUuid()));
             int n = selectStatement.executeUpdate();
             if (n == 1) {
-                return board;
+                return room;
             }
-            throw new DAOException("Failed to update board: " + board.getUuid());
+            throw new DAOException("Failed to update board: " + room.getUuid());
         } catch (SQLException | JsonProcessingException e) {
-            throw new DAOException("Failed to update board: " + board.getUuid(), e);
+            throw new DAOException("Failed to update board: " + room.getUuid(), e);
+        }
+    }
+
+    @Override
+    public void deleteRoom(UUID boardUUID) throws DAOException {
+        try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_BOARD_DELETE)) {
+            selectStatement.setBytes(1, Encryptor.uuidToBytes(boardUUID));
+            selectStatement.execute();
+        } catch (SQLException e) {
+            throw new DAOException("Failed to delete board: " + boardUUID, e);
         }
     }
 
@@ -92,36 +117,14 @@ public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Boa
     @Override
     public List<Board> readUserRoomsMeta(UUID userUUID) throws DAOException {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_BOARDS_BY_OWNER)) {
-            selectStatement.setObject(1, userUUID, Types.BINARY);
+            selectStatement.setBytes(1, Encryptor.uuidToBytes(userUUID));
             try (ResultSet result = selectStatement.executeQuery()) {
-                RSMapper<Board> mapper = new RSMapper<>(Arrays.asList(BoardMapper.values()));
+                RsToObjectListMapper<Board> mapper = new RsToObjectListMapper<>(List.of(MAPPER_BOARD_UUID, MAPPER_BOARD_NAME));
                 List<Board> boards = mapper.mapToList(result, Board::new);
                 return boards;
             }
         } catch (Exception e) {
             throw new DAOException("Failed to get board of: " + userUUID, e);
-        }
-    }
-
-    private enum BoardMapper implements RsToObjectMapper<Board> {
-        BOARD_ID((s, b) -> b.setId(s.getLong(COLUMN_BOARD_ID))),
-        BOARD_UUID((s, b) -> b.setUuid(UUID.nameUUIDFromBytes(s.getBytes(COLUMN_BOARD_UUID)))),
-        BOARD_NAME((s, b) -> b.setName(s.getString(COLUMN_BOARD_NAME))),
-        BOARD_ELEMENTS((s, b) -> b.getElements().addAll(Arrays.asList(new ObjectMapper()
-                .readValue(s.getString(COLUMN_BOARD_DATA), VShape[].class))));
-        public RsToObjectMapper func;
-
-        BoardMapper(RsToObjectMapper<Board> func) {
-            this.func = func;
-        }
-
-        @Override
-        public void apply(ResultSet rs, Board board) throws DAOException {
-            try {
-                func.apply(rs, board);
-            } catch (Exception e) {
-                throw new DAOException("Failed to map.", e);
-            }
         }
     }
 }

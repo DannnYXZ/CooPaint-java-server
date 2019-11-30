@@ -7,7 +7,9 @@ import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.*;
+import com.epam.coopaint.service.SnapshotService;
+import com.epam.coopaint.service.WSBoardService2;
+import com.epam.coopaint.service.WSChatService2;
 import com.epam.coopaint.service.impl.ServiceFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +25,7 @@ import java.util.UUID;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
-public class GetSnapshotCommand2 implements Command2 {
+public class SnapshotGetCommand2 implements Command2 {
 
     private static final String CHAT_UUID = "CHAT_UUID";
     private static final String BOARD_UUID = "BOARD_UUID";
@@ -45,8 +47,8 @@ public class GetSnapshotCommand2 implements Command2 {
             SnapshotService snapshotService = ServiceFactory.getInstance().getSnapshotService();
             try {
                 snap = snapshotService.readSnapshot(snapshotLink);
-                chatService.connectTo(user, snap.getChatUUID().toString(), wsSession);
-                boardService.connectTo(user, snap.getBoardUUID().toString(), wsSession);
+                chatService.connectTo(user, snap.getChat().getUuid().toString(), wsSession);
+                boardService.connectTo(user, snap.getBoard().getUuid().toString(), wsSession);
             } catch (ServiceException e) {
                 // no snapshot, allocating chat and board
                 try {

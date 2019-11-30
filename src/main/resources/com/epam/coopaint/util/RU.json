@@ -24,5 +24,6 @@
   "sign.up.error.exists": "Пользователь с такой почтой уже существует",
   "account": "Учетная запись",
   "name": "Имя",
-  "password.change": "Сменить пароль"
+  "password.change": "Сменить пароль",
+  "boards.my": "Мои доски"
 }

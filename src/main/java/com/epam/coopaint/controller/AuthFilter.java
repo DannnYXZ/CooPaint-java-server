@@ -1,8 +1,8 @@
 package com.epam.coopaint.controller;
 
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.service.impl.ServiceFactory;
 import com.epam.coopaint.service.UserService;
+import com.epam.coopaint.service.impl.ServiceFactory;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;

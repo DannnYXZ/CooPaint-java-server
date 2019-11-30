@@ -9,7 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class WSBoardService2 extends WSService<Board, VShape> {
     public WSBoardService2() {
-        daoSupplier = SQLBoardDAOImpl::new;
+        roomDaoSupplier = SQLBoardDAOImpl::new;
         roomSupplier = Board::new;
     }
 }

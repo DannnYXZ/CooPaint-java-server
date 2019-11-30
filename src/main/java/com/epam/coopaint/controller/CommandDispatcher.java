@@ -1,10 +1,10 @@
 package com.epam.coopaint.controller;
 
 import com.epam.coopaint.controller.command.Command2;
-import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.controller.command.impl2.*;
-import com.epam.coopaint.domain.User;
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.ResourceAction;
+import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
@@ -86,13 +86,13 @@ enum CommandDispatcher {
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern("/sign-out").action(READ_SITE).command(new SignOutCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern("/lang-pack/(EN|RU)").action(READ_SITE).command(new LangPackCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern("/set-avatar").action(UPLOAD_FILE).command(new UploadSetAvatarCommand2()));
-        //commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/(^$|{0})", UUID)).action(READ_SITE).command(new ChatConnectCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(READ_CHAT).command(new ChatReadHistoryCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(UPDATE_CHAT).command(new ChatAcceptMessagesCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/board/({0})/elements", UUID)).indices(List.of(0)).action(READ_BOARD).command(new BoardReadHistoryCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(format("/board/({0})/elements", UUID)).indices(List.of(0)).action(UPDATE_BOARD).command(new BoardAcceptElementCommand2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/boards/my", UUID)).action(READ_SITE).command(new ReadMyBoardsMeta2()));
-        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/snapshot/({0})", SNAPSHOT)).action(GET_SNAPSHOT).command(new GetSnapshotCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.DELETE).pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(DELETE_BOARD).command(new BoardDeleteCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/snapshot/all", UUID)).action(READ_SITE).command(new SnapshotReadAllCommand2()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET).pattern(format("/snapshot/({0})", SNAPSHOT)).action(GET_SNAPSHOT).command(new SnapshotGetCommand2()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST).pattern(".*").command(new WrongRequestCommand2()));
     }
 

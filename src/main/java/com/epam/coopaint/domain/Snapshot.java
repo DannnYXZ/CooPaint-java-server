@@ -1,11 +1,9 @@
 package com.epam.coopaint.domain;
 
-import java.util.UUID;
-
 public class Snapshot {
     private String link;
-    private UUID chatID;
-    private UUID boardID;
+    Chat chat = new Chat();
+    Board board = new Board();
 
     public String getLink() {
         return link;
@@ -16,21 +14,21 @@ public class Snapshot {
         return this;
     }
 
-    public UUID getChatUUID() {
-        return chatID;
+    public Chat getChat() {
+        return chat;
     }
 
-    public Snapshot setChatID(UUID chatID) {
-        this.chatID = chatID;
+    public Snapshot setChat(Chat chat) {
+        this.chat = chat;
         return this;
     }
 
-    public UUID getBoardUUID() {
-        return boardID;
+    public Board getBoard() {
+        return board;
     }
 
-    public Snapshot setBoardID(UUID boardID) {
-        this.boardID = boardID;
+    public Snapshot setBoard(Board board) {
+        this.board = board;
         return this;
     }
 }

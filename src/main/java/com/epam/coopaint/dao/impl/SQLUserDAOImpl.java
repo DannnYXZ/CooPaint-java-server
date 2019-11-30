@@ -6,14 +6,12 @@ import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.ConnectionPoolException;
 import com.epam.coopaint.exception.DAOException;
-import com.epam.coopaint.pool.ConnectionPoolImpl;
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
 import com.epam.coopaint.util.MailSender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,10 +24,10 @@ import static com.epam.coopaint.dao.impl.SQLData.*;
 class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     private static Logger logger = LogManager.getLogger();
     private static final int VALIDATION_LINK_LENGTH = 64;
-    private static final String QUERY_USER_ADD = "INSERT INTO user (name, email, hash, salt) VALUES (?, ?, ?, ?)";
-    private static final String QUERY_USER_FETCH_BY_EMAIL = "SELECT * FROM user WHERE email=?";
-    private static final String QUERY_USER_FETCH_BY_ID = "SELECT * FROM user WHERE id=?";
-    private static final String QUERY_USER_UPDATE_AVATAR = "UPDATE user SET avatar=? WHERE id=?";
+    private static final String QUERY_USER_ADD = "INSERT INTO user (user_name, user_email, user_hash, user_salt) VALUES (?, ?, ?, ?)";
+    private static final String QUERY_USER_FETCH_BY_EMAIL = "SELECT * FROM user WHERE user_email=?";
+    private static final String QUERY_USER_FETCH_BY_ID = "SELECT * FROM user WHERE user_id=?";
+    private static final String QUERY_USER_UPDATE_AVATAR = "UPDATE user SET user_avatar=? WHERE user_id=?";
 
     @Override
     public User signIn(SignInUpBundle bundle) throws DAOException {
@@ -49,8 +47,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
 
     @Override
     public User getUser(long id) throws DAOException {
-        try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_ID)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_ID)) {
             preparedStatement.setLong(1, id);
             try (ResultSet result = preparedStatement.executeQuery()) {
                 List<User> users = mapToUserList(result);
@@ -60,7 +57,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
                     throw new DAOException("No such user with id: " + id + "found");
                 }
             }
-        } catch (SQLException | ConnectionPoolException e) {
+        } catch (SQLException  e) {
             throw new DAOException("Failed to get user by id: " + id, e);
         }
     }
@@ -122,6 +119,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
         while (resultSet.next()) {
             var user = new User();
             user.setId(resultSet.getLong(COLUMN_USER_ID));
+            user.setUuid(Encryptor.bytesToUuid(resultSet.getBytes(COLUMN_USER_UUID)));
             user.setName(resultSet.getString(COLUMN_USER_NAME));
             user.setEmail(resultSet.getString(COLUMN_USER_EMAIL));
             user.setHash(resultSet.getBytes(COLUMN_USER_HASH));
