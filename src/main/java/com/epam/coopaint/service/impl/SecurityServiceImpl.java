@@ -1,7 +1,9 @@
 package com.epam.coopaint.service.impl;
 
+import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
+import com.epam.coopaint.dao.impl.TransactionManager;
 import com.epam.coopaint.domain.ACL;
 import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.domain.User;
@@ -26,16 +28,25 @@ class SecurityServiceImpl implements SecurityService {
 
     private ACL getACL(String resource) throws DAOException {
         SecurityDAO securityDAO = DAOFactory.INSTANCE.createSecurityDAO();
-        if (ACL_USE_CACHING) {
-            ACL acl = this.cacheACL.get(resource);
-            if (acl == null) {
-                acl = securityDAO.getACL(resource);
-                cacheACL.put(resource, acl);
+        var transaction = new TransactionManager();
+        try {
+            transaction.begin((GenericDAO) securityDAO);
+            if (ACL_USE_CACHING) {
+                ACL acl = this.cacheACL.get(resource);
+                if (acl == null) {
+                    acl = securityDAO.getACL(resource);
+                    cacheACL.put(resource, acl);
+                }
+                return acl;
+            } else {
+                ACL acl = securityDAO.getACL(resource);
+                return acl;
             }
-            return acl;
-        } else {
-            ACL acl = securityDAO.getACL(resource);
-            return acl;
+        } catch (DAOException exception) {
+            transaction.rollback();
+            throw exception;
+        } finally {
+            transaction.end();
         }
     }
 

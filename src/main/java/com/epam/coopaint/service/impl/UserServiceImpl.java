@@ -86,6 +86,7 @@ class UserServiceImpl implements UserService {
             UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
             var transaction = new TransactionManager();
             try {
+                transaction.begin((GenericDAO) userDAO);
                 userDAO.signUp(signUpBundle);
                 List<User> users = userDAO.getUsers(signUpBundle.getEmail());
                 transaction.commit();

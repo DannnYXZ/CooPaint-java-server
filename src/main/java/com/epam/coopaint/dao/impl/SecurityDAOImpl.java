@@ -4,11 +4,8 @@ import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.domain.ACL;
 import com.epam.coopaint.domain.ResourceAction;
-import com.epam.coopaint.exception.ConnectionPoolException;
 import com.epam.coopaint.exception.DAOException;
-import com.epam.coopaint.pool.ConnectionPoolImpl;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,14 +17,13 @@ class SecurityDAOImpl extends GenericDAO implements SecurityDAO {
 
     @Override
     public ACL getACL(String resource) throws DAOException {
-        try (Connection connection = ConnectionPoolImpl.getInstance().takeConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(QUERY_RIGHTS_BY_RESOURCE)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_RIGHTS_BY_RESOURCE)) {
             preparedStatement.setString(1, resource); // attention for resource
             try (ResultSet result = preparedStatement.executeQuery()) {
                 ACL acl = mapToACL(result);
                 return acl;
             }
-        } catch (SQLException | ConnectionPoolException e) {
+        } catch (SQLException e) {
             throw new DAOException(e);
         }
     }

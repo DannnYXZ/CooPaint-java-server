@@ -63,6 +63,7 @@ public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Boa
             try (ResultSet result = selectStatement.executeQuery()) {
                 RsToObjectListMapper<Board> mapper = new RsToObjectListMapper<>(List.of(
                         MAPPER_BOARD_ID,
+                        MAPPER_BOARD_UUID,
                         MAPPER_BOARD_NAME,
                         MAPPER_BOARD_CREATOR,
                         MAPPER_BOARD_CREATOR,

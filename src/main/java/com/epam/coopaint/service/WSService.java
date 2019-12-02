@@ -57,8 +57,8 @@ public class WSService<R extends Room<E>, E> {
                         roomDAO.createRoom(newRoom);
                         transaction.commit();
                     }
-                    rooms.put(uuid, newRoom); // put to cache
                     uuid = newRoom.getUuid();
+                    rooms.put(uuid, newRoom); // put to cache
                 } catch (DAOException ex) {
                     transaction.rollback();
                     throw new ServiceException("Failed to create new room.", ex);
