@@ -33,9 +33,6 @@ public class SignInCommand2 implements Command2 {
             try {
                 SignInUpBundle signInUpBundle = mapper.readValue(body, SignInUpBundle.class);
                 User user = userService.singIn(signInUpBundle);
-                if (!user.getAvatar().isEmpty()) {
-                    user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
-                }
                 var httpSession = (HttpSession) session;
                 String jsonUser = mapper.writeValueAsString(user);
                 httpSession.setAttribute(SESSION_USER, user); // WS session desync

@@ -28,7 +28,11 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     private static final String QUERY_USER_FETCH_BY_EMAIL = "SELECT * FROM user WHERE user_email=?";
     private static final String QUERY_USER_FETCH_BY_UUID = "SELECT * FROM user WHERE user_uuid=?";
     private static final String QUERY_USER_UPDATE_AVATAR = "UPDATE user SET user_avatar=? WHERE user_id=?";
-    private static final String QUERY_USER_UPDATE = "UPDATE user SET user_name=COALESCE(?, user_name)," +
+    private static final String QUERY_USER_UPDATE = "UPDATE user SET " +
+            "user_name=COALESCE(?, user_name)," +
+            "user_email=COALESCE(?, user_email)," +
+            "user_hash=COALESCE(?, user_hash)," +
+            "user_salt=COALESCE(?, user_salt)," +
             "user_lang=COALESCE(?, user_lang)" +
             " WHERE user_uuid=?";
 
@@ -70,8 +74,11 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     public void update(User updater) throws DAOException {
         try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_UPDATE)) {
             preparedStatement.setString(1, updater.getName());
-            preparedStatement.setString(2, updater.getLang().name());
-            preparedStatement.setBytes(3, Encryptor.uuidToBytes(updater.getUuid()));
+            preparedStatement.setString(2, updater.getEmail());
+            preparedStatement.setBytes(3, updater.getHash());
+            preparedStatement.setBytes(4, updater.getSalt());
+            preparedStatement.setString(5, updater.getLang() != null ? updater.getLang().name() : null);
+            preparedStatement.setBytes(6, Encryptor.uuidToBytes(updater.getUuid()));
             int n = preparedStatement.executeUpdate();
             if (n == 1) {
                 logger.info("Updated user avatar, user_id: " + updater.getUuid());

@@ -9,5 +9,6 @@ public enum ResourceAction {
     UPDATE_BOARD,
     DELETE_BOARD,
     UPLOAD_FILE,
+    UPDATE_USER,
     GET_SNAPSHOT
 }

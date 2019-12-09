@@ -10,6 +10,7 @@ import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.FileSystemService;
 import com.epam.coopaint.service.UserService;
+import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.epam.coopaint.domain.ACLData.*;
+import static com.epam.coopaint.domain.LocationData.SERVE_PATH_AVATAR;
 import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
 
 class UserServiceImpl implements UserService {
@@ -36,12 +38,19 @@ class UserServiceImpl implements UserService {
             User user = userDAO.signIn(bundle);
             transaction.commit();
             user.getGroups().add(GROUP_USER); // TODO: load groups from db
+            wireAvatarServePath(user);
             return user;
         } catch (DAOException e) {
             transaction.rollback();
             throw new ServiceException("Failed to sign in.", e);
         } finally {
             transaction.end();
+        }
+    }
+
+    private void wireAvatarServePath(User user) {
+        if (!user.getAvatar().isEmpty()) {
+            user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
         }
     }
 
@@ -79,9 +88,17 @@ class UserServiceImpl implements UserService {
         var transaction = new TransactionManager();
         try {
             transaction.begin((GenericDAO) userDAO);
+            if (updater.getPassword() != null) {
+                Encryptor encryptor = Encryptor.getInstance();
+                encryptor.generateDidgest(updater.getPassword());
+                updater.setHash(encryptor.getCurrentHash());
+                updater.setSalt(encryptor.getCurrentSalt());
+            }
             userDAO.update(updater);
             User updatedUser = userDAO.getUser(updater.getUuid());
+            updatedUser.getGroups().add(GROUP_USER); // TODO: load groups from db
             transaction.commit();
+            wireAvatarServePath(updatedUser);
             return updatedUser;
         } catch (DAOException e) {
             transaction.rollback();
@@ -95,7 +112,7 @@ class UserServiceImpl implements UserService {
     public User signUp(SignInUpBundle signUpBundle) throws ServiceException {
         // validation
         //if (UserValidator.INSTANCE.isValid(signUpBundle)) {
-        if (true) { //FIXME
+        if (true) { // FIXME
             UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
             var transaction = new TransactionManager();
             try {
