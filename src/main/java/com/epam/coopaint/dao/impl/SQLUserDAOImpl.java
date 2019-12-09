@@ -4,7 +4,6 @@ import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.exception.ConnectionPoolException;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
@@ -18,6 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import static com.epam.coopaint.dao.impl.SQLData.*;
 
@@ -26,8 +26,11 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     private static final int VALIDATION_LINK_LENGTH = 64;
     private static final String QUERY_USER_ADD = "INSERT INTO user (user_name, user_email, user_hash, user_salt) VALUES (?, ?, ?, ?)";
     private static final String QUERY_USER_FETCH_BY_EMAIL = "SELECT * FROM user WHERE user_email=?";
-    private static final String QUERY_USER_FETCH_BY_ID = "SELECT * FROM user WHERE user_id=?";
+    private static final String QUERY_USER_FETCH_BY_UUID = "SELECT * FROM user WHERE user_uuid=?";
     private static final String QUERY_USER_UPDATE_AVATAR = "UPDATE user SET user_avatar=? WHERE user_id=?";
+    private static final String QUERY_USER_UPDATE = "UPDATE user SET user_name=COALESCE(?, user_name)," +
+            "user_lang=COALESCE(?, user_lang)" +
+            " WHERE user_uuid=?";
 
     @Override
     public User signIn(SignInUpBundle bundle) throws DAOException {
@@ -46,19 +49,37 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     }
 
     @Override
-    public User getUser(long id) throws DAOException {
-        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_ID)) {
-            preparedStatement.setLong(1, id);
+    public User getUser(UUID uuid) throws DAOException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_UUID)) {
+            preparedStatement.setBytes(1, Encryptor.uuidToBytes(uuid));
             try (ResultSet result = preparedStatement.executeQuery()) {
                 List<User> users = mapToUserList(result);
                 if (users.size() > 0) {
                     return users.get(0);
                 } else {
-                    throw new DAOException("No such user with id: " + id + "found");
+                    throw new DAOException("No such user with id: " + uuid + "found");
                 }
             }
-        } catch (SQLException  e) {
-            throw new DAOException("Failed to get user by id: " + id, e);
+        } catch (SQLException e) {
+            throw new DAOException("Failed to get user by id: " + uuid, e);
+        }
+    }
+
+    // updater must contain valid uuid
+    @Override
+    public void update(User updater) throws DAOException {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_UPDATE)) {
+            preparedStatement.setString(1, updater.getName());
+            preparedStatement.setString(2, updater.getLang().name());
+            preparedStatement.setBytes(3, Encryptor.uuidToBytes(updater.getUuid()));
+            int n = preparedStatement.executeUpdate();
+            if (n == 1) {
+                logger.info("Updated user avatar, user_id: " + updater.getUuid());
+            } else {
+                throw new DAOException("Failed to update avatar.");
+            }
+        } catch (SQLException e) {
+            throw new DAOException(e);
         }
     }
 

@@ -49,32 +49,36 @@ public class User {
         return email;
     }
 
-    public void setEmail(String email) {
+    public User setEmail(String email) {
         this.email = email;
+        return this;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public User setPassword(String password) {
         this.password = password;
+        return this;
     }
 
     public byte[] getHash() {
         return hash;
     }
 
-    public void setHash(byte[] hash) {
+    public User setHash(byte[] hash) {
         this.hash = hash;
+        return this;
     }
 
     public byte[] getSalt() {
         return salt;
     }
 
-    public void setSalt(byte[] salt) {
+    public User setSalt(byte[] salt) {
         this.salt = salt;
+        return this;
     }
 
     public LangPack getLang() {
@@ -90,31 +94,36 @@ public class User {
         return isAuth;
     }
 
-    public void setAuth(boolean auth) {
+    public User setAuth(boolean auth) {
         isAuth = auth;
+        return this;
     }
 
-    public void setAvatar(String avatar) {
+    public User setAvatar(String avatar) {
         this.avatar = avatar;
+        return this;
     }
 
-    public void setLang(LangPack lang) {
+    public User setLang(LangPack lang) {
         this.lang = lang;
+        return this;
     }
 
     public Set<String> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<String> groups) {
+    public User setGroups(Set<String> groups) {
         this.groups = groups;
+        return this;
     }
 
     public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public User setUuid(UUID uuid) {
         this.uuid = uuid;
+        return this;
     }
 }

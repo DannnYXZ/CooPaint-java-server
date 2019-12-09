@@ -74,8 +74,21 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void singOut(String login) throws ServiceException {
-
+    public User update(User updater) throws ServiceException {
+        UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
+        var transaction = new TransactionManager();
+        try {
+            transaction.begin((GenericDAO) userDAO);
+            userDAO.update(updater);
+            User updatedUser = userDAO.getUser(updater.getUuid());
+            transaction.commit();
+            return updatedUser;
+        } catch (DAOException e) {
+            transaction.rollback();
+            throw new ServiceException(e);
+        } finally {
+            transaction.end();
+        }
     }
 
     @Override
@@ -109,14 +122,14 @@ class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateAvatar(long userId, String newAvatarFileName) throws ServiceException {
+    public void updateAvatar(UUID uuid, String newAvatarFileName) throws ServiceException {
         // validate length
         UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
         var transaction = new TransactionManager();
         // 1 - get user by id
         try {
             transaction.begin((GenericDAO) userDAO);
-            User user = userDAO.getUser(userId);
+            User user = userDAO.getUser(uuid);
             String previousAvatarName = user.getAvatar();
             userDAO.updateAvatar(user.getId(), newAvatarFileName);
             transaction.commit();
@@ -128,7 +141,7 @@ class UserServiceImpl implements UserService {
         } catch (DAOException e) {
             transaction.rollback();
             throw new ServiceException("Failed to update avatar.", e);
-        }finally {
+        } finally {
             transaction.end();
         }
     }

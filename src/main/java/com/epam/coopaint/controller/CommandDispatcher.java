@@ -133,10 +133,7 @@ enum CommandDispatcher {
                 result = new CommandResult().setCode(HttpServletResponse.SC_FORBIDDEN);
             }
             return result;
-        } catch (ServiceException | CommandException e) {
-            logger.error("Internal server error", e);
-            return new CommandResult().setCode(SC_BAD_REQUEST).setBody(e.getMessage());
-        } catch (RuntimeException e) {
+        } catch (ServiceException | CommandException | RuntimeException e) {
             logger.fatal("Internal server error", e);
             var mapper = new ObjectMapper();
             ObjectNode err = new ObjectMapper().createObjectNode().put("body", "Internal ERROR ಠ╭╮ಠ.");

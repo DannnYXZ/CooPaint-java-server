@@ -41,7 +41,7 @@ public class WSService<R extends Room<E>, E> {
             try {
                 transaction.begin((GenericDAO) roomDAO, (GenericDAO) userDAO);
                 R room = roomDAO.readRoom(uuid);
-                User creator = userDAO.getUser(room.getCreator().getId());
+                User creator = userDAO.getUser(room.getCreator().getUuid());
                 room.setCreator(creator);
                 // get user
                 transaction.commit();

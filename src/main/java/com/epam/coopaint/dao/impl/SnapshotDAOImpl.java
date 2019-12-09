@@ -9,14 +9,13 @@ import com.epam.coopaint.util.Encryptor;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.epam.coopaint.dao.impl.SQLBoardDAOImpl.MAPPER_BOARD_NAME;
 import static com.epam.coopaint.dao.impl.SQLBoardDAOImpl.MAPPER_BOARD_UUID;
 import static com.epam.coopaint.dao.impl.SQLChatDAOImpl.MAPPER_CHAT_UUID;
-import static com.epam.coopaint.dao.impl.SQLData.*;
+import static com.epam.coopaint.dao.impl.SQLData.COLUMN_SNAP_LINK;
 
 class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
     private static final String QUERY_CREATE_SNAPSHOT = "INSERT INTO snapshot (snap_link, chat_id, board_id) VALUES (?, " +

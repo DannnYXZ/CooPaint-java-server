@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 interface RsToObject<T> {
-    void apply(ResultSet rs, T target) throws Exception;
+    void apply(ResultSet rs, T target) throws Exception; // FIXME: separate all interfaces and classes
 }
 
 class RsToObjectListMapper<T> {
