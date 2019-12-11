@@ -1,6 +1,6 @@
-package com.epam.coopaint.controller.command.impl2;
+package com.epam.coopaint.command.impl;
 
-import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
@@ -15,14 +15,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpSession;
-import java.nio.file.Paths;
 import java.util.List;
 
-import static com.epam.coopaint.domain.LocationData.SERVE_PATH_AVATAR;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
-public class SignInCommand2 implements Command2 {
+public class SignInCommand implements Command {
     private static Logger logger = LogManager.getLogger();
 
     @Override

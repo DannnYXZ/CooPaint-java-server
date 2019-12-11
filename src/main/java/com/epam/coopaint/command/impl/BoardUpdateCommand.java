@@ -1,37 +1,41 @@
-package com.epam.coopaint.controller.command.impl2;
+package com.epam.coopaint.command.impl;
 
-import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.command.Command;
+import com.epam.coopaint.domain.Board;
+import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.Pair;
-import com.epam.coopaint.domain.VShape;
 import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
-import com.epam.coopaint.service.WSBoardService2;
+import com.epam.coopaint.exception.ServiceException;
+import com.epam.coopaint.service.WSBoardService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.websocket.Session;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class BoardAcceptElementCommand2 implements Command2 {
+// board metadata only
+public class BoardUpdateCommand implements Command {
     @Override
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         try {
             var mapper = new ObjectMapper();
-            List<VShape> messages = Arrays.asList(mapper.readValue(body, VShape[].class));
             UUID boardUUID = UUID.fromString(props.get(0));
-            var boardService = CDI.current().select(WSBoardService2.class).get();
-            Pair<List<VShape>, Set<Session>> processedElements = boardService.addElements(boardUUID, messages); // calc time and from
+            Board updater = mapper.readValue(body, Board.class);
+            updater.setUuid(boardUUID);
+            var boardService = CDI.current().select(WSBoardService.class).get();
+            Pair<Board, Set<Session>> pair = boardService.update(updater);
             ObjectNode jbody = mapper.createObjectNode();
-            jbody.put("action", "add-elements");
-            jbody.set("elements", mapper.valueToTree(processedElements.getElement0()));
+            jbody.put("action", "update-board");
+            jbody.set("board", mapper.valueToTree(pair.getElement0()));
             WSCommandResult result = (WSCommandResult) new WSCommandResult().setBody(mapper.writeValueAsString(jbody));
-            return result.setReceivers(processedElements.getElement1());
-        } catch (JsonProcessingException e) {
+            return result.setReceivers(pair.getElement1());
+
+        } catch (JsonProcessingException | ServiceException e) {
             throw new CommandException(e);
         }
     }

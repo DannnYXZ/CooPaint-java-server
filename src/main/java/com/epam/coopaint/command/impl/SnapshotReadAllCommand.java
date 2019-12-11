@@ -1,6 +1,6 @@
-package com.epam.coopaint.controller.command.impl2;
+package com.epam.coopaint.command.impl;
 
-import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.domain.User;
@@ -16,7 +16,7 @@ import java.util.List;
 
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
-public class SnapshotReadAllCommand2 implements Command2 {
+public class SnapshotReadAllCommand implements Command {
     @Override
     public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         var httpSession = (HttpSession) session;

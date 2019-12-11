@@ -8,10 +8,11 @@ import java.util.UUID;
 
 public class Room<E> {
     @JsonIgnore
-    protected long id;
+    private long id;
     protected UUID uuid;
-    protected User creator;
-    protected List<E> elements = new ArrayList<>();
+    private String name;
+    private User creator;
+    private List<E> elements;
 
     public long getId() {
         return id;
@@ -29,11 +30,20 @@ public class Room<E> {
         this.uuid = uuid;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Room<E> setName(String name) {
+        this.name = name;
+        return this;
+    }
+
     public User getCreator() {
         return creator;
     }
 
-    public Room setCreator(User creator) {
+    public Room<E> setCreator(User creator) {
         this.creator = creator;
         return this;
     }
@@ -42,7 +52,8 @@ public class Room<E> {
         return elements;
     }
 
-    public void setElements(List<E> elements) {
+    public Room<E> setElements(List<E> elements) {
         this.elements = elements;
+        return this;
     }
 }

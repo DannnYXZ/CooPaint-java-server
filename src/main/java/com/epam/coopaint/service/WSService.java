@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.websocket.Session;
+import java.sql.Connection;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -144,6 +145,32 @@ public class WSService<R extends Room<E>, E> {
         rooms.get(roomUUID).getElements().addAll(elements);
         Set<Session> sessions = this.sessions.get(roomUUID);
         return new Pair<>(elements, sessions);
+    }
+
+    public Pair<R, Set<Session>> update(R updater) throws ServiceException {
+        // virtual room first
+        R room = rooms.get(updater.getUuid());
+        Set<Session> receivers = new HashSet<>();
+        if (room != null) {
+            if (updater.getName() != null) room.setName(updater.getName());
+            receivers = sessions.get(updater.getUuid());
+        }
+        // now db: 1 - not loaded, 2 - guest room
+        if (room == null || room.getCreator().isAuth()) {
+            var transaction = new TransactionManager();
+            RoomDAO<R> roomDAO = roomDaoSupplier.get();
+            try {
+                transaction.begin((GenericDAO) roomDAO);
+                roomDAO.updateRoom(updater);
+                transaction.commit();
+            } catch (DAOException e) {
+                transaction.rollback();
+                throw new ServiceException("Failed to update room: " + updater.getUuid(), e);
+            } finally {
+                transaction.end();
+            }
+        }
+        return new Pair<>(room, receivers);
     }
 
     public List<R> getUserBoardsMeta(UUID userUUID) throws ServiceException {

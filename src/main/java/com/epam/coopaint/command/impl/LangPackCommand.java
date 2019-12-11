@@ -1,6 +1,6 @@
-package com.epam.coopaint.controller.command.impl2;
+package com.epam.coopaint.command.impl;
 
-import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.CommandException;
@@ -15,7 +15,7 @@ import java.util.List;
 
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
-public class LangPackCommand2 implements Command2 {
+public class LangPackCommand implements Command {
 
     @Override
     public CommandResult execute(List<String> props, String body, Object session) throws CommandException {

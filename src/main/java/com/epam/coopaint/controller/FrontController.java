@@ -20,29 +20,29 @@ public class FrontController extends HttpServlet {
     private static Logger logger = LogManager.getLogger();
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) {
-        dispatch(CommandDispatcher.Method.POST, request, response);
+        dispatch(CommandProvider.Method.POST, request, response);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) {
-        dispatch(CommandDispatcher.Method.GET, request, response);
+        dispatch(CommandProvider.Method.GET, request, response);
     }
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) {
-        dispatch(CommandDispatcher.Method.PUT, request, response);
+        dispatch(CommandProvider.Method.PUT, request, response);
     }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) {
-        dispatch(CommandDispatcher.Method.DELETE, request, response);
+        dispatch(CommandProvider.Method.DELETE, request, response);
     }
 
-    private void dispatch(CommandDispatcher.Method method, HttpServletRequest request, HttpServletResponse response) {
+    private void dispatch(CommandProvider.Method method, HttpServletRequest request, HttpServletResponse response) {
         try {
             String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
             String url = request.getPathInfo();
             HttpSession session = request.getSession(false);
-            CommandResult result = CommandDispatcher.INSTANCE.dispatch(method, url, body, session, session);
+            CommandResult result = CommandProvider.INSTANCE.dispatch(method, url, body, session, session);
             response.setStatus(result.getStatusCode());
             response.setCharacterEncoding("UTF-8");
             response.setContentType("application/json");

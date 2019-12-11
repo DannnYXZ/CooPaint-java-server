@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -22,18 +23,22 @@ import static com.epam.coopaint.dao.impl.SQLData.*;
 
 public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Board> {
     private static String QUERY_BOARD_CREATE = "INSERT INTO board  (board_uuid, board_name, board_data, board_creator) VALUES (?, COALESCE(?, board_name), ?, ?)";
-    private static String QUERY_BOARD_READ = "SELECT * FROM board WHERE board_uuid=?";
-    private static String QUERY_BOARD_UPDATE = "UPDATE board SET board_name=COALESCE(?, board_name)," +
+    private static String QUERY_BOARD_READ = "SELECT * FROM board INNER JOIN user u ON u.user_id = board_creator WHERE board_uuid=?";
+    private static String QUERY_BOARD_UPDATE = "UPDATE board SET " +
+            "board_name=COALESCE(?, board_name)," +
             "board_data=COALESCE(?, board_data) WHERE board_uuid=?";
-    private static String QUERY_BOARDS_BY_OWNER = "SELECT board.board_uuid, board.board_name FROM board JOIN user u ON board.board_creator = u.user_id AND u.user_uuid=?";
+    private static String QUERY_BOARDS_BY_OWNER = "SELECT board.board_uuid, board.board_name FROM board " +
+            "JOIN user u ON board.board_creator = u.user_id AND u.user_uuid=?";
     private static String QUERY_BOARD_DELETE = "DELETE FROM board WHERE board_uuid=?";
 
     static RsToObject<Board> MAPPER_BOARD_ID = (s, b) -> b.setId(s.getLong(COLUMN_BOARD_ID));
     static RsToObject<Board> MAPPER_BOARD_UUID = (s, b) -> b.setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_BOARD_UUID)));
     static RsToObject<Board> MAPPER_BOARD_NAME = (s, b) -> b.setName(s.getString(COLUMN_BOARD_NAME));
-    static RsToObject<Board> MAPPER_BOARD_CREATOR = (s, b) -> b.setCreator(new User().setId(s.getLong(COLUMN_BOARD_CREATOR_ID)));
-    static RsToObject<Board> MAPPER_BOARD_ELEMENTS = (s, b) -> b.getElements().addAll(Arrays.asList(new ObjectMapper()
-            .readValue(s.getString(COLUMN_BOARD_DATA), VShape[].class)));
+    static RsToObject<Board> MAPPER_BOARD_CREATOR_UUID = (s, b) -> b.setCreator(new User()
+            .setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_USER_UUID))));
+    static RsToObject<Board> MAPPER_BOARD_ELEMENTS = (s, b) -> b.setElements(new ArrayList<>())
+            .getElements().addAll(Arrays.asList(new ObjectMapper()
+                    .readValue(s.getString(COLUMN_BOARD_DATA), VShape[].class)));
 
     @Override
     public Board createRoom(Board board) throws DAOException {
@@ -65,8 +70,7 @@ public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Boa
                         MAPPER_BOARD_ID,
                         MAPPER_BOARD_UUID,
                         MAPPER_BOARD_NAME,
-                        MAPPER_BOARD_CREATOR,
-                        MAPPER_BOARD_CREATOR,
+                        MAPPER_BOARD_CREATOR_UUID,
                         MAPPER_BOARD_ELEMENTS));
                 List<Board> boards = mapper.mapToList(result, Board::new);
                 if (boards.isEmpty()) {

@@ -1,6 +1,6 @@
-package com.epam.coopaint.controller.command.impl2;
+package com.epam.coopaint.command.impl;
 
-import com.epam.coopaint.controller.command.Command2;
+import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.Pair;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.domain.User;
@@ -8,8 +8,8 @@ import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SnapshotService;
-import com.epam.coopaint.service.WSBoardService2;
-import com.epam.coopaint.service.WSChatService2;
+import com.epam.coopaint.service.WSBoardService;
+import com.epam.coopaint.service.WSChatService;
 import com.epam.coopaint.service.impl.ServiceFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,7 @@ import java.util.UUID;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
 import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
-public class SnapshotGetCommand2 implements Command2 {
+public class SnapshotGetCommand implements Command {
 
     private static final String CHAT_UUID = "CHAT_UUID";
     private static final String BOARD_UUID = "BOARD_UUID";
@@ -38,8 +38,8 @@ public class SnapshotGetCommand2 implements Command2 {
         var wsSession = (Session) session;
         var httpSession = (HttpSession) wsSession.getUserProperties().get(SESSION_HTTP);
         var user = (User) httpSession.getAttribute(SESSION_USER);
-        var chatService = CDI.current().select(WSChatService2.class).get();
-        var boardService = CDI.current().select(WSBoardService2.class).get();
+        var chatService = CDI.current().select(WSChatService.class).get();
+        var boardService = CDI.current().select(WSBoardService.class).get();
         // check session
         Snapshot snap = (Snapshot) wsSession.getUserProperties().get(SNAPSHOT);
         if (snap == null) {
