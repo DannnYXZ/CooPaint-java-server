@@ -1,4 +1,4 @@
-package com.epam.coopaint.dao.impl;
+package com.epam.coopaint.dao;
 
 import com.epam.coopaint.exception.DAOException;
 

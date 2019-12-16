@@ -2,26 +2,24 @@ package com.epam.coopaint.command.impl;
 
 import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.Board;
-import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.WSBoardService;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.websocket.Session;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class BoardReadHistoryCommand implements Command {
+public class BoardReadCommand implements Command {
     @Override
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
         UUID boardUUID = UUID.fromString(props.get(0));
         try {
-            var boardService = CDI.current().select(WSBoardService.class).get();
+            var boardService = ServiceFactory.INSTANCE.getBoardService();
             Board board = boardService.readRoom(boardUUID);
             var mapper = new ObjectMapper();
             ObjectNode jbody = mapper.createObjectNode();

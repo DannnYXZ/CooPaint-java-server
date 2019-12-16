@@ -1,9 +1,6 @@
 package com.epam.coopaint.dao.impl;
 
-import com.epam.coopaint.dao.BoardDAO;
-import com.epam.coopaint.dao.SecurityDAO;
-import com.epam.coopaint.dao.SnapshotDAO;
-import com.epam.coopaint.dao.UserDAO;
+import com.epam.coopaint.dao.*;
 import com.epam.coopaint.domain.Room;
 
 import java.util.function.Supplier;
@@ -23,14 +20,13 @@ public enum DAOFactory {
         return new SnapshotDAOImpl();
     }
 
+    public FileSystemDAO createFileSystemDAO() {
+        return new FileSystemDAOImpl();
+    }
+
     public <R extends Room<E>, E> RoomDAO<R> createRoomDao(Class<E> daoClass) {
         Supplier<RoomDAO> s = SQLBoardDAOImpl::new;
         // Supplier<R> supplier = daoClass;
         return s.get();
-    }
-
-
-    public BoardDAO createBoardDAO() {
-        return new SQLBoardDAOImpl();
     }
 }

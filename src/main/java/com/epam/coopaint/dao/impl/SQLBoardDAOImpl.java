@@ -1,7 +1,8 @@
 package com.epam.coopaint.dao.impl;
 
-import com.epam.coopaint.dao.BoardDAO;
 import com.epam.coopaint.dao.GenericDAO;
+import com.epam.coopaint.dao.RoomDAO;
+import com.epam.coopaint.dao.RsToObject;
 import com.epam.coopaint.domain.Board;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.domain.VShape;
@@ -19,11 +20,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static com.epam.coopaint.dao.impl.SQLData.*;
+import static com.epam.coopaint.dao.impl.SQLColumns.*;
 
-public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Board> {
-    private static String QUERY_BOARD_CREATE = "INSERT INTO board  (board_uuid, board_name, board_data, board_creator) VALUES (?, COALESCE(?, board_name), ?, ?)";
-    private static String QUERY_BOARD_READ = "SELECT * FROM board INNER JOIN user u ON u.user_id = board_creator WHERE board_uuid=?";
+public class SQLBoardDAOImpl extends GenericDAO implements RoomDAO<Board> {
+    private static String QUERY_BOARD_CREATE = "INSERT INTO board (board_uuid, board_name, board_data, board_creator) " +
+            "VALUES (?, COALESCE(?, board_name), ?, ?)";
+    private static String QUERY_BOARD_READ = "SELECT * FROM board INNER JOIN user u ON u.user_id = board_creator " +
+            "WHERE board_uuid=?";
     private static String QUERY_BOARD_UPDATE = "UPDATE board SET " +
             "board_name=COALESCE(?, board_name)," +
             "board_data=COALESCE(?, board_data) WHERE board_uuid=?";
@@ -107,16 +110,6 @@ public class SQLBoardDAOImpl extends GenericDAO implements BoardDAO, RoomDAO<Boa
         } catch (SQLException e) {
             throw new DAOException("Failed to delete board: " + boardUUID, e);
         }
-    }
-
-    @Override
-    public void getRights(User user, long accessRights) {
-
-    }
-
-    @Override
-    public void setRights(User user, long accessRights) {
-
     }
 
     @Override

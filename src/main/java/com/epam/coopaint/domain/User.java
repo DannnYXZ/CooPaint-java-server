@@ -4,7 +4,6 @@ import com.epam.coopaint.util.LangPack;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,7 +22,7 @@ public class User {
     private UUID uuid;
     private LangPack lang;
     @JsonIgnore
-    private Set<String> groups = new HashSet<>();
+    private Set<String> groups;
 
     public User() {
     }

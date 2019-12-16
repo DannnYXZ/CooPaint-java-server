@@ -4,13 +4,12 @@ import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.Pair;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.domain.User;
-import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SnapshotService;
-import com.epam.coopaint.service.WSBoardService;
-import com.epam.coopaint.service.WSChatService;
 import com.epam.coopaint.service.impl.ServiceFactory;
+import com.epam.coopaint.service.impl.WSBoardServiceImpl;
+import com.epam.coopaint.service.impl.WSChatServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,14 +21,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.*;
 
 public class SnapshotGetCommand implements Command {
-
-    private static final String CHAT_UUID = "CHAT_UUID";
-    private static final String BOARD_UUID = "BOARD_UUID";
-    private static final String SNAPSHOT = "SNAPSHOT";
 
     @Override
     public WSCommandResult execute(List<String> props, String body, Object session) throws CommandException {
@@ -38,13 +32,13 @@ public class SnapshotGetCommand implements Command {
         var wsSession = (Session) session;
         var httpSession = (HttpSession) wsSession.getUserProperties().get(SESSION_HTTP);
         var user = (User) httpSession.getAttribute(SESSION_USER);
-        var chatService = CDI.current().select(WSChatService.class).get();
-        var boardService = CDI.current().select(WSBoardService.class).get();
+        var chatService = CDI.current().select(WSChatServiceImpl.class).get();
+        var boardService = CDI.current().select(WSBoardServiceImpl.class).get();
         // check session
-        Snapshot snap = (Snapshot) wsSession.getUserProperties().get(SNAPSHOT);
+        Snapshot snap = (Snapshot) wsSession.getUserProperties().get(SESSION_SNAPSHOT);
         if (snap == null) {
             // checking db
-            SnapshotService snapshotService = ServiceFactory.getInstance().getSnapshotService();
+            SnapshotService snapshotService = ServiceFactory.INSTANCE.getSnapshotService();
             try {
                 snap = snapshotService.readSnapshot(snapshotLink);
                 chatService.connectTo(user, snap.getChat().getUuid().toString(), wsSession);
@@ -55,13 +49,12 @@ public class SnapshotGetCommand implements Command {
                     Pair<UUID, Set<Session>> chat = chatService.connectTo(user, "", wsSession);
                     Pair<UUID, Set<Session>> board = boardService.connectTo(user, "", wsSession);
                     snap = snapshotService.createSnapshot(chat.getElement0(), board.getElement0(), user.isAuth());
-                    wsSession.getUserProperties().put(SNAPSHOT, snap);
+                    wsSession.getUserProperties().put(SESSION_SNAPSHOT, snap);
                 } catch (ServiceException ex) {
                     throw new CommandException("Failed to store snapshot.", ex);
                 }
             }
         }
-
         try {
             // building response
             var mapper = new ObjectMapper();

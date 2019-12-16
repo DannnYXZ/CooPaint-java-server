@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 public class SignUpCommand implements Command {
@@ -26,7 +26,7 @@ public class SignUpCommand implements Command {
         try {
             var httpSession = (HttpSession) session;
             SignInUpBundle bundle = mapper.readValue(body, SignInUpBundle.class);
-            UserService userService = ServiceFactory.getInstance().getUserService();
+            UserService userService = ServiceFactory.INSTANCE.getUserService();
             List<User> users = userService.getUsersByEmail(bundle.getEmail());
             if (!users.isEmpty()) {
                 ObjectNode err = mapper.createObjectNode().put("body", "sign.up.error.exists");
@@ -34,7 +34,6 @@ public class SignUpCommand implements Command {
             }
             User user = userService.signUp(bundle);
             httpSession.setAttribute(SESSION_USER, user);
-            // MailSender.getInstance().sendMail("Welcome to CooPaint, " + user.getName(), user.getEmail());
             return new CommandResult().setBody(mapper.writeValueAsString(user));
         } catch (ServiceException | JsonProcessingException e) {
             throw new CommandException(e);

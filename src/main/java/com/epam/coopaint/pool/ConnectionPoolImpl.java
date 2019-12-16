@@ -10,19 +10,31 @@ import java.sql.SQLException;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.epam.coopaint.pool.DBConnectionData.*;
 
-public class ConnectionPoolImpl implements ConnectionPool {
+public final class ConnectionPoolImpl implements ConnectionPool {
     private static Logger logger = LogManager.getLogger();
-    private static ConnectionPool instance;
-    private static final AtomicBoolean isInitialized = new AtomicBoolean(false);
-    private static final Lock lock = new ReentrantLock();
+    private final Lock lock;
     private final Semaphore semaphore;
     private Queue<ProxyConnection> connectionPool;
+    private static ConnectionPool instance;
+
+    static {
+        try {
+            instance = new ConnectionPoolImpl();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database is down.", e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Failed to load database driver.", e);
+        }
+    }
+
+    public static ConnectionPool getInstance() {
+        return instance;
+    }
 
     private ConnectionPoolImpl() throws SQLException, ClassNotFoundException {
         connectionPool = new ArrayDeque<>(DB_CONNECTIONS_MAX);
@@ -32,22 +44,9 @@ public class ConnectionPoolImpl implements ConnectionPool {
             connectionPool.add(new ProxyConnection(connection));
         }
         semaphore = new Semaphore(DB_CONNECTIONS_MAX);
+        lock = new ReentrantLock();
     }
 
-    public static ConnectionPool getInstance() {
-        if (isInitialized.compareAndSet(false, true)) {
-            try {
-                instance = new ConnectionPoolImpl();
-            } catch (SQLException e) {
-                isInitialized.set(false);
-                throw new RuntimeException("Database is down.", e);
-            } catch (ClassNotFoundException e) {
-                isInitialized.set(false);
-                throw new RuntimeException("Failed to load database driver.", e);
-            }
-        }
-        return instance;
-    }
 
     @Override
     public Connection takeConnection() throws ConnectionPoolException {
@@ -64,7 +63,7 @@ public class ConnectionPoolImpl implements ConnectionPool {
         } catch (SQLException e) {
             throw new ConnectionPoolException("Error while trying to obtain database connection.", e);
         } finally {
-            lock.unlock(); // TODO: check behaviour
+            lock.unlock();
         }
     }
 
@@ -83,7 +82,6 @@ public class ConnectionPoolImpl implements ConnectionPool {
 
     // clear pool on destroy
     public void closeAllConnections() {
-        // TODO: sustain connections amount (recover lost connections - taken but not released)
         for (int i = 0; i < DB_CONNECTIONS_MAX; i++) {
             try {
                 var connection = (ProxyConnection) takeConnection();

@@ -1,5 +1,6 @@
 package com.epam.coopaint.controller;
 
+import com.epam.coopaint.command.impl.SessionAttribute;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.service.UserService;
 import com.epam.coopaint.service.impl.ServiceFactory;
@@ -10,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 
 @WebFilter("/*")
 public class AuthFilter implements Filter {
@@ -21,9 +21,9 @@ public class AuthFilter implements Filter {
         if (session == null) {
             // GUEST
             session = request.getSession();
-            UserService userService = ServiceFactory.getInstance().getUserService();
+            UserService userService = ServiceFactory.INSTANCE.getUserService();
             User guest = userService.createGuest();
-            session.setAttribute(SESSION_USER, guest);
+            session.setAttribute(SessionAttribute.SESSION_USER, guest);
         }
         filterChain.doFilter(servletRequest, servletResponse);
     }

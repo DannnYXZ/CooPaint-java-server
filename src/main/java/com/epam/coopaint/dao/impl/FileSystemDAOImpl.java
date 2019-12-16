@@ -1,7 +1,7 @@
-package com.epam.coopaint.service.impl;
+package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.FileSystemDAO;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.FileSystemService;
 import com.epam.coopaint.util.Encryptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,8 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-class FileSystemServiceImpl implements FileSystemService {
-    // FIXME: move logic to dao level
+class FileSystemDAOImpl implements FileSystemDAO {
     private static Logger logger = LogManager.getLogger();
     private static int FILE_NAME_LENGTH = 12;
     private static int MAX_ATTEMPTS = 3;

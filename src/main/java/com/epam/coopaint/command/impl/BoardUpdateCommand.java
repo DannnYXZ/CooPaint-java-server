@@ -2,17 +2,14 @@ package com.epam.coopaint.command.impl;
 
 import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.Board;
-import com.epam.coopaint.domain.CommandResult;
 import com.epam.coopaint.domain.Pair;
-import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.WSBoardService;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.websocket.Session;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +24,7 @@ public class BoardUpdateCommand implements Command {
             UUID boardUUID = UUID.fromString(props.get(0));
             Board updater = mapper.readValue(body, Board.class);
             updater.setUuid(boardUUID);
-            var boardService = CDI.current().select(WSBoardService.class).get();
+            var boardService = ServiceFactory.INSTANCE.getBoardService();
             Pair<Board, Set<Session>> pair = boardService.update(updater);
             ObjectNode jbody = mapper.createObjectNode();
             jbody.put("action", "update-board");

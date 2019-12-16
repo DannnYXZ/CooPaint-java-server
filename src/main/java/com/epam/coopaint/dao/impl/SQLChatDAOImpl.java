@@ -1,6 +1,8 @@
 package com.epam.coopaint.dao.impl;
 
 import com.epam.coopaint.dao.GenericDAO;
+import com.epam.coopaint.dao.RoomDAO;
+import com.epam.coopaint.dao.RsToObject;
 import com.epam.coopaint.domain.Chat;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
@@ -14,13 +16,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static com.epam.coopaint.dao.impl.SQLData.*;
+import static com.epam.coopaint.dao.impl.SQLColumns.*;
 
 public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
     private static String QUERY_CHAT_CREATE = "INSERT INTO chat (chat_uuid, chat_creator) VALUES (?,?)";
     private static String QUERY_CHAT_READ = "SELECT * FROM chat JOIN user u ON u.user_id = chat_creator WHERE chat_uuid=?";
-    private static String QUERY_CHAT_UPDATE = "UPDATE chat SET chat_name=COALESCE(?, chat_name)," +
-            "data=COALESCE(?, data) WHERE chat_uuid=?";
+    private static String QUERY_CHAT_UPDATE = "UPDATE chat SET chat_name=COALESCE(?, chat_name) WHERE chat_uuid=?";
     private static String QUERY_CHATS_BY_OWNER = "SELECT (chat_uuid) FROM chat WHERE chat_creator IN (SELECT (chat_id) FROM user WHERE chat_uuid=?)";
 
     static RsToObject<Chat> MAPPER_CHAT_ID = (s, c) -> c.setId(s.getLong(COLUMN_CHAT_ID));
@@ -85,7 +86,7 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
 
     @Override
     public void deleteRoom(UUID roomUUID) {
-        // done by board dao
+        // done by db
     }
 
     @Override

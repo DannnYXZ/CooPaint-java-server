@@ -1,6 +1,7 @@
 package com.epam.coopaint.dao.impl;
 
 import com.epam.coopaint.dao.GenericDAO;
+import com.epam.coopaint.dao.RsToObject;
 import com.epam.coopaint.dao.SnapshotDAO;
 import com.epam.coopaint.domain.Snapshot;
 import com.epam.coopaint.exception.DAOException;
@@ -15,7 +16,7 @@ import java.util.UUID;
 import static com.epam.coopaint.dao.impl.SQLBoardDAOImpl.MAPPER_BOARD_NAME;
 import static com.epam.coopaint.dao.impl.SQLBoardDAOImpl.MAPPER_BOARD_UUID;
 import static com.epam.coopaint.dao.impl.SQLChatDAOImpl.MAPPER_CHAT_UUID;
-import static com.epam.coopaint.dao.impl.SQLData.COLUMN_SNAP_LINK;
+import static com.epam.coopaint.dao.impl.SQLColumns.COLUMN_SNAP_LINK;
 
 class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
     private static final String QUERY_CREATE_SNAPSHOT = "INSERT INTO snapshot (snap_link, chat_id, board_id) VALUES (?, " +

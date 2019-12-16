@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import static com.epam.coopaint.dao.impl.SQLData.COLUMN_ACL_GROUP;
+import static com.epam.coopaint.dao.impl.SQLColumns.COLUMN_ACL_GROUP;
 
 class SecurityDAOImpl extends GenericDAO implements SecurityDAO {
     private static final String QUERY_RIGHTS_BY_RESOURCE = "SELECT * from acl WHERE resource=?";

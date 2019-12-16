@@ -14,14 +14,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 
 public class SnapshotReadAllCommand implements Command {
     @Override
     public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         var httpSession = (HttpSession) session;
         var user = (User) httpSession.getAttribute(SESSION_USER);
-        SnapshotService snapshotService = ServiceFactory.getInstance().getSnapshotService();
+        SnapshotService snapshotService = ServiceFactory.INSTANCE.getSnapshotService();
         try {
             List<Snapshot> snapshots = snapshotService.readSnapshots(user.getUuid());
             var result = new CommandResult().setBody(new ObjectMapper().writeValueAsString(snapshots));

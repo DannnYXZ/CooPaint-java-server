@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 import static com.epam.coopaint.domain.ACLData.RESOURCE_ALL;
 import static com.epam.coopaint.domain.ResourceAction.*;
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
 import static java.text.MessageFormat.format;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
@@ -101,7 +101,7 @@ enum CommandProvider {
                 .command(new ChatAcceptMessagesCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET)
                 .pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(READ_BOARD)
-                .command(new BoardReadHistoryCommand()));
+                .command(new BoardReadCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST)
                 .pattern(format("/board/({0})/elements", UUID)).indices(List.of(0)).action(UPDATE_BOARD)
                 .command(new BoardAcceptElementCommand()));
@@ -122,7 +122,7 @@ enum CommandProvider {
     }
 
     private boolean canAccess(List<String> resources, ResourceAction action, User user) throws ServiceException {
-        SecurityService securityService = ServiceFactory.getInstance().getSecurityService();
+        SecurityService securityService = ServiceFactory.INSTANCE.getSecurityService();
         boolean canAccess = false; // FIXME: strict
         for (String resource : resources) {
             if (securityService.canAccess(resource, action, user)) {

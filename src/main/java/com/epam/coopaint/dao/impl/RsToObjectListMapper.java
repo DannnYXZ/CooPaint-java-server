@@ -1,13 +1,11 @@
 package com.epam.coopaint.dao.impl;
 
+import com.epam.coopaint.dao.RsToObject;
+
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-
-interface RsToObject<T> {
-    void apply(ResultSet rs, T target) throws Exception; // FIXME: separate all interfaces and classes
-}
 
 class RsToObjectListMapper<T> {
     private List<RsToObject<T>> mappings;

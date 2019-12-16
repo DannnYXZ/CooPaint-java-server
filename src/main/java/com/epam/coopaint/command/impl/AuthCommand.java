@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 
 public class AuthCommand implements Command {
 
@@ -18,7 +18,8 @@ public class AuthCommand implements Command {
     public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
         try {
             var httpSession = (HttpSession) session;
-            User user = (User) httpSession.getAttribute(SESSION_USER); // already filtered (at least guest)
+            // user already filtered (at least guest)
+            User user = (User) httpSession.getAttribute(SESSION_USER);
             return new CommandResult().setBody(new ObjectMapper().writeValueAsString(user));
         } catch (JsonProcessingException e) {
             throw new CommandException(e);

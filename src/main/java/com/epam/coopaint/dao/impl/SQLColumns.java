@@ -1,6 +1,6 @@
 package com.epam.coopaint.dao.impl;
 
-class SQLData {
+class SQLColumns {
     static final String COLUMN_USER_ID = "user_id";
     static final String COLUMN_USER_UUID = "user_uuid";
     static final String COLUMN_USER_NAME = "user_name";
@@ -19,7 +19,6 @@ class SQLData {
     static final String COLUMN_CHAT_ID = "chat_id";
     static final String COLUMN_CHAT_UUID = "chat_uuid";
     static final String COLUMN_CHAT_CREATOR_ID = "chat_creator";
-    static final String COLUMN_CHAT_DATA = "data";
 
     static final String COLUMN_ACL_GROUP = "group";
 

@@ -1,5 +1,6 @@
 package com.epam.coopaint.service.impl;
 
+import com.epam.coopaint.dao.FileSystemDAO;
 import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
@@ -8,23 +9,26 @@ import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
-import com.epam.coopaint.service.FileSystemService;
 import com.epam.coopaint.service.UserService;
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
+import com.epam.coopaint.util.MailSender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import static com.epam.coopaint.dao.impl.LocationData.SERVE_PATH_AVATAR;
+import static com.epam.coopaint.dao.impl.LocationData.STORAGE_PATH_AVATAR;
 import static com.epam.coopaint.domain.ACLData.*;
-import static com.epam.coopaint.domain.LocationData.SERVE_PATH_AVATAR;
-import static com.epam.coopaint.domain.LocationData.STORAGE_PATH_AVATAR;
 
 class UserServiceImpl implements UserService {
     private static Logger logger = LogManager.getLogger();
+    private static final String MESSAGE_WELCOME = "Welcome to CooPainT! " +
+            "Now you can manage your boards! (create, update, delete)";
 
     // validate all input data
     @Override
@@ -78,7 +82,7 @@ class UserServiceImpl implements UserService {
         guest.setLang(LangPack.EN);
         guest.setAuth(false);
         guest.setUuid(UUID.randomUUID());
-        guest.getGroups().add(GROUP_GUEST); // TODO: load groups from db
+        guest.setGroups(new HashSet<>()).getGroups().add(GROUP_GUEST); // TODO: load groups from db
         return guest;
     }
 
@@ -123,6 +127,9 @@ class UserServiceImpl implements UserService {
                 if (users.size() != 0) {
                     User user = users.get(0);
                     user.getGroups().add(GROUP_USER);
+                    // notify user
+                    MailSender sender = MailSender.getInstance();
+                    sender.sendMail(MESSAGE_WELCOME, user.getEmail());
                     return user;
                 } else {
                     throw new ServiceException("No user with email: " + signUpBundle.getEmail());
@@ -134,7 +141,7 @@ class UserServiceImpl implements UserService {
                 transaction.end();
             }
         } else {
-            throw new ServiceException("Invalid user data."); // TODO: reason - aka validator.getReason()
+            throw new ServiceException("Invalid user data.");
         }
     }
 
@@ -150,10 +157,9 @@ class UserServiceImpl implements UserService {
             String previousAvatarName = user.getAvatar();
             userDAO.updateAvatar(user.getId(), newAvatarFileName);
             transaction.commit();
-            // FIXME: service access -> no move to DAO level
             if (!previousAvatarName.isEmpty()) {
-                FileSystemService fsService = ServiceFactory.getInstance().getFileSystemService(); // FIXME: DAO class
-                fsService.remove(Paths.get(STORAGE_PATH_AVATAR, previousAvatarName).toString());
+                FileSystemDAO fileSystemDAO = DAOFactory.INSTANCE.createFileSystemDAO();
+                fileSystemDAO.remove(Paths.get(STORAGE_PATH_AVATAR, previousAvatarName).toString());
             }
         } catch (DAOException e) {
             transaction.rollback();

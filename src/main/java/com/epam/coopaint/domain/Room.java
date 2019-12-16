@@ -2,7 +2,6 @@ package com.epam.coopaint.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,16 +17,18 @@ public class Room<E> {
         return id;
     }
 
-    public void setId(long id) {
+    public Room<E> setId(long id) {
         this.id = id;
+        return this;
     }
 
     public UUID getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public Room<E> setUuid(UUID uuid) {
         this.uuid = uuid;
+        return this;
     }
 
     public String getName() {

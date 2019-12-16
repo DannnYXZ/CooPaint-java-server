@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 
 public class UserUpdateCommand implements Command {
@@ -25,7 +25,7 @@ public class UserUpdateCommand implements Command {
         // this command can only be called by registered user (verified by acl)
         var httpSession = (HttpSession) session;
         var user = (User) httpSession.getAttribute(SESSION_USER);
-        UserService userService = ServiceFactory.getInstance().getUserService();
+        UserService userService = ServiceFactory.INSTANCE.getUserService();
         try {
             var mapper = new ObjectMapper().disable(MapperFeature.USE_ANNOTATIONS);
             User updater = mapper.readValue(body, User.class);

@@ -1,5 +1,5 @@
 package com.epam.coopaint.controller;
 
-public enum UploadType {
+public enum FileUploadType {
     AVATAR, BOARD
 }

@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 
 public class SignInCommand implements Command {
@@ -25,7 +25,7 @@ public class SignInCommand implements Command {
 
     @Override
     public CommandResult execute(List<String> props, String body, Object session) throws CommandException {
-        UserService userService = ServiceFactory.getInstance().getUserService();
+        UserService userService = ServiceFactory.INSTANCE.getUserService();
         try {
             var mapper = new ObjectMapper();
             try {
@@ -33,7 +33,7 @@ public class SignInCommand implements Command {
                 User user = userService.singIn(signInUpBundle);
                 var httpSession = (HttpSession) session;
                 String jsonUser = mapper.writeValueAsString(user);
-                httpSession.setAttribute(SESSION_USER, user); // WS session desync
+                httpSession.setAttribute(SESSION_USER, user); //FIXME: WS desynchronize
                 return new CommandResult().setBody(jsonUser);
             } catch (ServiceException e) {
                 ObjectNode err = mapper.createObjectNode().put("body", "sign.in.error.no.such");

@@ -1,25 +1,25 @@
 package com.epam.coopaint.dao.impl;
 
 import com.epam.coopaint.dao.GenericDAO;
+import com.epam.coopaint.dao.RsToObject;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.domain.SignInUpBundle;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
-import com.epam.coopaint.util.MailSender;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import static com.epam.coopaint.dao.impl.SQLData.*;
+import static com.epam.coopaint.dao.impl.SQLColumns.*;
 
 class SQLUserDAOImpl extends GenericDAO implements UserDAO {
     private static Logger logger = LogManager.getLogger();
@@ -35,6 +35,17 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
             "user_salt=COALESCE(?, user_salt)," +
             "user_lang=COALESCE(?, user_lang)" +
             " WHERE user_uuid=?";
+
+    static RsToObject<User> MAPPER_USER_ID = (s, u) -> u.setId(s.getLong(COLUMN_USER_ID));
+    static RsToObject<User> MAPPER_USER_UUID = (s, u) -> u.setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_USER_UUID)));
+    static RsToObject<User> MAPPER_USER_GROUPS = (s, u) -> u.setGroups(new HashSet<>());
+    static RsToObject<User> MAPPER_USER_NAME = (s, u) -> u.setName(s.getString(COLUMN_USER_NAME));
+    static RsToObject<User> MAPPER_USER_EMAIL = (s, u) -> u.setEmail(s.getString(COLUMN_USER_EMAIL));
+    static RsToObject<User> MAPPER_USER_HASH = (s, u) -> u.setHash(s.getBytes(COLUMN_USER_HASH));
+    static RsToObject<User> MAPPER_USER_SALT = (s, u) -> u.setSalt(s.getBytes(COLUMN_USER_SALT));
+    static RsToObject<User> MAPPER_USER_AVATAR = (s, u) -> u.setAvatar(s.getString(COLUMN_USER_AVATAR));
+    static RsToObject<User> MAPPER_USER_LANG = (s, u) -> u.setLang(LangPack.valueOf(s.getString(COLUMN_USER_LANG)));
+    static RsToObject<User> MAPPER_USER_AUTH = (s, u) -> u.setAuth(true);
 
     @Override
     public User signIn(SignInUpBundle bundle) throws DAOException {
@@ -57,12 +68,26 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
         try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_UUID)) {
             preparedStatement.setBytes(1, Encryptor.uuidToBytes(uuid));
             try (ResultSet result = preparedStatement.executeQuery()) {
-                List<User> users = mapToUserList(result);
+                var mapper = new RsToObjectListMapper<User>(List.of(
+                        MAPPER_USER_ID,
+                        MAPPER_USER_UUID,
+                        MAPPER_USER_GROUPS,
+                        MAPPER_USER_NAME,
+                        MAPPER_USER_EMAIL,
+                        MAPPER_USER_HASH,
+                        MAPPER_USER_SALT,
+                        MAPPER_USER_AVATAR,
+                        MAPPER_USER_LANG,
+                        MAPPER_USER_AUTH
+                ));
+                List<User> users = mapper.mapToList(result, User::new);
                 if (users.size() > 0) {
                     return users.get(0);
                 } else {
                     throw new DAOException("No such user with id: " + uuid + "found");
                 }
+            } catch (Exception e) {
+                throw new DAOException("Failed to map user from id: " + uuid + "found");
             }
         } catch (SQLException e) {
             throw new DAOException("Failed to get user by id: " + uuid, e);
@@ -95,8 +120,22 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_USER_FETCH_BY_EMAIL)) {
             selectStatement.setString(1, email);
             try (ResultSet result = selectStatement.executeQuery()) {
-                List<User> users = mapToUserList(result);
+                var mapper = new RsToObjectListMapper<User>(List.of(
+                        MAPPER_USER_ID,
+                        MAPPER_USER_UUID,
+                        MAPPER_USER_GROUPS,
+                        MAPPER_USER_NAME,
+                        MAPPER_USER_EMAIL,
+                        MAPPER_USER_HASH,
+                        MAPPER_USER_SALT,
+                        MAPPER_USER_AVATAR,
+                        MAPPER_USER_LANG,
+                        MAPPER_USER_AUTH
+                ));
+                List<User> users = mapper.mapToList(result, User::new);
                 return users;
+            } catch (Exception e) {
+                throw new DAOException("Failed to map user from email: " + email, e);
             }
         } catch (SQLException e) {
             throw new DAOException("Failed to get user by email: " + email, e);
@@ -115,9 +154,6 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
             int n = preparedStatement.executeUpdate();
             if (n == 1) {
                 logger.info("Registered user: " + bundle.getEmail());
-                MailSender sender = MailSender.getInstance();
-                String validationLink = Encryptor.getInstance().generateRandomHash(VALIDATION_LINK_LENGTH);
-                //sender.sendMail(validationLink, bundle.getEmail()); // TODO: long hash link + session status
             } else {
                 throw new DAOException("Database error.");
             }
@@ -140,23 +176,5 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
         } catch (SQLException e) {
             throw new DAOException(e);
         }
-    }
-
-    private List<User> mapToUserList(ResultSet resultSet) throws SQLException {
-        List<User> users = new ArrayList<>();
-        while (resultSet.next()) {
-            var user = new User();
-            user.setId(resultSet.getLong(COLUMN_USER_ID));
-            user.setUuid(Encryptor.bytesToUuid(resultSet.getBytes(COLUMN_USER_UUID)));
-            user.setName(resultSet.getString(COLUMN_USER_NAME));
-            user.setEmail(resultSet.getString(COLUMN_USER_EMAIL));
-            user.setHash(resultSet.getBytes(COLUMN_USER_HASH));
-            user.setSalt(resultSet.getBytes(COLUMN_USER_SALT));
-            user.setAvatar(resultSet.getString(COLUMN_USER_AVATAR));
-            user.setLang(LangPack.valueOf(resultSet.getString(COLUMN_USER_LANG)));
-            user.setAuth(true);
-            users.add(user);
-        }
-        return users;
     }
 }

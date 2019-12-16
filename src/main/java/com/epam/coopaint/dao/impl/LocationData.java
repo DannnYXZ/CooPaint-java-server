@@ -1,4 +1,4 @@
-package com.epam.coopaint.domain;
+package com.epam.coopaint.dao.impl;
 
 import com.epam.coopaint.util.PropertyLoader;
 

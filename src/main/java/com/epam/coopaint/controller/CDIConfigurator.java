@@ -7,7 +7,7 @@ import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_HTTP;
 
 public class CDIConfigurator extends ServerEndpointConfig.Configurator {
 

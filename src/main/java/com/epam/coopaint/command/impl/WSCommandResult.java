@@ -1,4 +1,6 @@
-package com.epam.coopaint.domain;
+package com.epam.coopaint.command.impl;
+
+import com.epam.coopaint.domain.CommandResult;
 
 import javax.websocket.Session;
 import java.util.HashSet;

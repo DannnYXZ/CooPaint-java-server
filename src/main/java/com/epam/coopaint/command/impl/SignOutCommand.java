@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 
 public class SignOutCommand implements Command {
     private static Logger logger = LogManager.getLogger();
@@ -20,7 +20,7 @@ public class SignOutCommand implements Command {
         try {
             var httpSession = (HttpSession) session;
             logger.info(((User) httpSession.getAttribute(SESSION_USER)).getName() + " logged out.");
-            httpSession.invalidate(); // user will be guest on next action
+            httpSession.invalidate(); // user will be guest on next request
             return new CommandResult();
         } catch (ClassCastException e) {
             throw new CommandException(e);

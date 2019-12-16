@@ -3,14 +3,12 @@ package com.epam.coopaint.command.impl;
 import com.epam.coopaint.command.Command;
 import com.epam.coopaint.domain.Pair;
 import com.epam.coopaint.domain.VShape;
-import com.epam.coopaint.domain.WSCommandResult;
 import com.epam.coopaint.exception.CommandException;
-import com.epam.coopaint.service.WSBoardService;
+import com.epam.coopaint.service.impl.ServiceFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import javax.enterprise.inject.spi.CDI;
 import javax.websocket.Session;
 import java.util.Arrays;
 import java.util.List;
@@ -24,8 +22,9 @@ public class BoardAcceptElementCommand implements Command {
             var mapper = new ObjectMapper();
             List<VShape> messages = Arrays.asList(mapper.readValue(body, VShape[].class));
             UUID boardUUID = UUID.fromString(props.get(0));
-            var boardService = CDI.current().select(WSBoardService.class).get();
+            var boardService = ServiceFactory.INSTANCE.getBoardService();
             Pair<List<VShape>, Set<Session>> processedElements = boardService.addElements(boardUUID, messages); // calc time and from
+            // build message
             ObjectNode jbody = mapper.createObjectNode();
             jbody.put("action", "add-elements");
             jbody.set("elements", mapper.valueToTree(processedElements.getElement0()));

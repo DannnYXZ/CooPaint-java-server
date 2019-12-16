@@ -1,30 +1,24 @@
 package com.epam.coopaint.service.impl;
 
-import com.epam.coopaint.service.FileSystemService;
+import com.epam.coopaint.domain.Board;
+import com.epam.coopaint.domain.Chat;
+import com.epam.coopaint.domain.Message;
+import com.epam.coopaint.domain.VShape;
 import com.epam.coopaint.service.SecurityService;
 import com.epam.coopaint.service.SnapshotService;
 import com.epam.coopaint.service.UserService;
+import com.epam.coopaint.service.WSService;
 
-public final class ServiceFactory {
-    private static final ServiceFactory instance = new ServiceFactory();
+import javax.enterprise.inject.spi.CDI;
+
+public enum ServiceFactory {
+    INSTANCE;
     private final UserService userService = new UserServiceImpl();
     private final SecurityService securityService = new SecurityServiceImpl();
-    private final FileSystemService fileSystemService = new FileSystemServiceImpl();
     private final SnapshotService snapshotService = new SnapshotServiceImpl();
-
-    private ServiceFactory() {
-    }
-
-    public static ServiceFactory getInstance() {
-        return instance;
-    }
 
     public UserService getUserService() {
         return userService;
-    }
-
-    public FileSystemService getFileSystemService() {
-        return fileSystemService;
     }
 
     public SecurityService getSecurityService() {
@@ -33,5 +27,13 @@ public final class ServiceFactory {
 
     public SnapshotService getSnapshotService() {
         return snapshotService;
+    }
+
+    public WSService<Board, VShape> getBoardService() {
+        return CDI.current().select(WSBoardServiceImpl.class).get();
+    }
+
+    public WSService<Chat, Message> getChatService() {
+        return CDI.current().select(WSChatServiceImpl.class).get();
     }
 }

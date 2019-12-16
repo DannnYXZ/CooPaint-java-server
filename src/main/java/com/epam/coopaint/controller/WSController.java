@@ -1,9 +1,9 @@
 package com.epam.coopaint.controller;
 
+import com.epam.coopaint.command.impl.WSCommandResult;
 import com.epam.coopaint.domain.CommandResult;
-import com.epam.coopaint.domain.WSCommandResult;
-import com.epam.coopaint.service.WSBoardService;
-import com.epam.coopaint.service.WSChatService;
+import com.epam.coopaint.service.impl.WSBoardServiceImpl;
+import com.epam.coopaint.service.impl.WSChatServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +17,7 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_HTTP;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_HTTP;
 
 @ApplicationScoped
 @ServerEndpoint(value = "/ws", configurator = CDIConfigurator.class)
@@ -25,9 +25,9 @@ public class WSController {
     private static Logger logger = LogManager.getLogger();
 
     @Inject
-    private WSChatService chatService;
+    private WSChatServiceImpl chatService;
     @Inject
-    private WSBoardService boardService;
+    private WSBoardServiceImpl boardService;
 
     @OnOpen
     public void open(Session session, EndpointConfig config) {

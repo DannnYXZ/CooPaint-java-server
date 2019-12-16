@@ -13,7 +13,7 @@ import com.epam.coopaint.util.LangPack;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
-import static com.epam.coopaint.domain.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
 
 public class LangPackCommand implements Command {
 
@@ -27,7 +27,8 @@ public class LangPackCommand implements Command {
         var httpSession = (HttpSession) session;
         var user = (User) httpSession.getAttribute(SESSION_USER);
         if (user.isAuth() && !langPack.equals(user.getLang())) {
-            UserService userService = ServiceFactory.getInstance().getUserService();
+            // update db lang data
+            UserService userService = ServiceFactory.INSTANCE.getUserService();
             var updater = new User().setLang(langPack).setUuid(user.getUuid());
             try {
                 userService.update(updater);
