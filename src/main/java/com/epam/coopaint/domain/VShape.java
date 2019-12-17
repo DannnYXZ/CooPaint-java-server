@@ -12,15 +12,17 @@ public class VShape {
         return type;
     }
 
-    public void setType(ShapeType type) {
+    public VShape setType(ShapeType type) {
         this.type = type;
+        return this;
     }
 
     public List<Float> getParams() {
         return params;
     }
 
-    public void setParams(List<Float> params) {
+    public VShape setParams(List<Float> params) {
         this.params = params;
+        return this;
     }
 }

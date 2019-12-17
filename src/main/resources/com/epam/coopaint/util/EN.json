@@ -25,5 +25,6 @@
   "account": "Account",
   "name": "Name",
   "password.change": "Change password",
-  "boards.my": "My boards"
+  "boards.my": "My boards",
+  "password.constraints": "Password must consist of at least 4 characters, including lowercase letters (a-z), uppercase letters (A-Z) and numeric characters"
 }

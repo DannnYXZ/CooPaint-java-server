@@ -55,7 +55,7 @@ public class Encryptor {
         return currentHash;
     }
 
-    public String generateRandomHash(int length) {
+    public static String generateAlphaNumHash(int length) {
         var sb = new StringBuilder();
         var random = new Random();
         for (int i = 0; i < length; i++) {

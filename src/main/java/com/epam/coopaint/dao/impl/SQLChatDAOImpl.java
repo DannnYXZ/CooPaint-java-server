@@ -63,8 +63,10 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
                     throw new DAOException("No chat with uuid: " + chatUUID);
                 }
                 return chats.get(0);
+            } catch (Exception e) {
+                throw new DAOException("Failed to map chat by uuid: " + chatUUID, e);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DAOException("Failed to get chat by uuid: " + chatUUID, e);
         }
     }
@@ -97,9 +99,11 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
                 RsToObjectListMapper<Chat> mapper = new RsToObjectListMapper<>(List.of(MAPPER_CHAT_UUID));
                 List<Chat> Chats = mapper.mapToList(result, Chat::new);
                 return Chats;
+            } catch (Exception e) {
+                throw new DAOException("Failed to map chat of user: " + userUUID, e);
             }
-        } catch (Exception e) {
-            throw new DAOException("Failed to get Chat of: " + userUUID, e);
+        } catch (SQLException e) {
+            throw new DAOException("Failed to get chat of user: " + userUUID, e);
         }
     }
 }

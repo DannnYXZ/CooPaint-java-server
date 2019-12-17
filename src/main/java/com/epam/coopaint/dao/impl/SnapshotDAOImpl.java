@@ -51,8 +51,10 @@ class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
                 } else {
                     throw new DAOException("No such snapshot: " + link);
                 }
+            } catch (Exception e) {
+                throw new DAOException("Failed to map snapshot by link: " + link, e);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DAOException("Failed to read snapshot: " + link, e);
         }
     }

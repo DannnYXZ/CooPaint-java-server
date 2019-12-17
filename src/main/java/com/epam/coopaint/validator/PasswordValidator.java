@@ -3,34 +3,30 @@ package com.epam.coopaint.validator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public enum PasswordValidator {
-    INSTANCE;
-    private String pattern = null;
+class PasswordValidator {
+    private String pattern;
 
-    // TODO: decorator
-    public PasswordValidator buildValidator(boolean forceSpecialChar,
-                                            boolean forceCapitalLetter,
-                                            boolean forceNumber,
-                                            int minLength,
-                                            int maxLength) {
-        StringBuilder patternBuilder = new StringBuilder("((?=.*[a-z])");
+    PasswordValidator(boolean forceSpecialChar,
+                             boolean forceCapitalLetter,
+                             boolean forceNumber,
+                             int minLength,
+                             int maxLength) {
+        StringBuilder patternBuilder = new StringBuilder("^(?=.*[a-z])");
 
         if (forceSpecialChar) {
-            patternBuilder.append("(?=.*[@#$%])");
+            patternBuilder.append("(?=.*[~`!@#$%^&*()-_+={}[]|\\;:\"<>,./?])");
         }
         if (forceCapitalLetter) {
             patternBuilder.append("(?=.*[A-Z])");
         }
         if (forceNumber) {
-            patternBuilder.append("(?=.*d)");
+            patternBuilder.append("(?=.*\\d)");
         }
-        patternBuilder.append(".{" + minLength + "," + maxLength + "})");
+        patternBuilder.append(".{").append(minLength).append(",").append(maxLength).append("}$");
         pattern = patternBuilder.toString();
-
-        return INSTANCE;
     }
 
-    public boolean validatePassword(final String password) {
+    boolean isValidPassword(String password) {
         Pattern p = Pattern.compile(pattern);
         Matcher m = p.matcher(password);
         return m.matches();

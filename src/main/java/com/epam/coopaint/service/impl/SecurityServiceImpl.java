@@ -22,7 +22,6 @@ import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
 import static com.epam.coopaint.service.impl.SecurityData.ACL_USE_CACHING;
 
 class SecurityServiceImpl implements SecurityService {
-    // TODO: synchronize
     private static Logger logger = LogManager.getLogger();
     private Map<String, ACL> cacheACL = new ConcurrentHashMap<>(); // <resource, ACL> - offloading DB
 

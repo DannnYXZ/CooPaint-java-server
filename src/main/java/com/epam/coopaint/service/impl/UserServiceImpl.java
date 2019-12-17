@@ -13,6 +13,7 @@ import com.epam.coopaint.service.UserService;
 import com.epam.coopaint.util.Encryptor;
 import com.epam.coopaint.util.LangPack;
 import com.epam.coopaint.util.MailSender;
+import com.epam.coopaint.validator.UserValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -29,8 +30,6 @@ class UserServiceImpl implements UserService {
     private static Logger logger = LogManager.getLogger();
     private static final String MESSAGE_WELCOME = "Welcome to CooPainT! " +
             "Now you can manage your boards! (create, update, delete)";
-
-    // validate all input data
     @Override
     public User singIn(SignInUpBundle bundle) throws ServiceException {
         DAOFactory daoObjectFactory = DAOFactory.INSTANCE;
@@ -38,7 +37,6 @@ class UserServiceImpl implements UserService {
         var transaction = new TransactionManager();
         try {
             transaction.begin((GenericDAO) userDAO);
-            // TODO: validate email n password
             User user = userDAO.signIn(bundle);
             transaction.commit();
             user.getGroups().add(GROUP_USER); // TODO: load groups from db
@@ -82,7 +80,7 @@ class UserServiceImpl implements UserService {
         guest.setLang(LangPack.EN);
         guest.setAuth(false);
         guest.setUuid(UUID.randomUUID());
-        guest.setGroups(new HashSet<>()).getGroups().add(GROUP_GUEST); // TODO: load groups from db
+        guest.setGroups(new HashSet<>()).getGroups().add(GROUP_GUEST);
         return guest;
     }
 
@@ -114,9 +112,7 @@ class UserServiceImpl implements UserService {
 
     @Override
     public User signUp(SignInUpBundle signUpBundle) throws ServiceException {
-        // validation
-        //if (UserValidator.INSTANCE.isValid(signUpBundle)) {
-        if (true) { // FIXME
+        if (UserValidator.INSTANCE.isValid(signUpBundle)) {
             UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
             var transaction = new TransactionManager();
             try {

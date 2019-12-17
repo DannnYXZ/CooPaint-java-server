@@ -71,7 +71,7 @@ public final class ConnectionPoolImpl implements ConnectionPool {
     public void releaseConnection(Connection connection) {
         if (connection.getClass() != ProxyConnection.class) {
             logger.warn("Attempt to add wild connection into pool.");
-            return; // TODO: throw runtime for bad user logic to be fixed?
+            return;
         }
         var proxyConnection = (ProxyConnection) connection;
         lock.lock();

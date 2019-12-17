@@ -9,7 +9,7 @@ import java.util.List;
 public class Polygon {
     public static void main(String[] args) {
         for (int i = 0; i < 12; i++) {
-            String hash = Encryptor.getInstance().generateRandomHash(12);
+            String hash = Encryptor.generateAlphaNumHash(12);
             System.out.println(hash);
         }
 

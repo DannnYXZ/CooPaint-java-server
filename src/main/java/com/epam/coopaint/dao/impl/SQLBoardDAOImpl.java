@@ -80,8 +80,10 @@ public class SQLBoardDAOImpl extends GenericDAO implements RoomDAO<Board> {
                     throw new DAOException("No board with uuid: " + boardUUID);
                 }
                 return boards.get(0);
+            } catch (Exception e) {
+                throw new DAOException("Failed to map board by uuid: " + boardUUID, e);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DAOException("Failed to get board by uuid: " + boardUUID, e);
         }
     }
@@ -117,11 +119,15 @@ public class SQLBoardDAOImpl extends GenericDAO implements RoomDAO<Board> {
         try (PreparedStatement selectStatement = connection.prepareStatement(QUERY_BOARDS_BY_OWNER)) {
             selectStatement.setBytes(1, Encryptor.uuidToBytes(userUUID));
             try (ResultSet result = selectStatement.executeQuery()) {
-                RsToObjectListMapper<Board> mapper = new RsToObjectListMapper<>(List.of(MAPPER_BOARD_UUID, MAPPER_BOARD_NAME));
+                RsToObjectListMapper<Board> mapper = new RsToObjectListMapper<>(List.of(
+                        MAPPER_BOARD_UUID,
+                        MAPPER_BOARD_NAME));
                 List<Board> boards = mapper.mapToList(result, Board::new);
                 return boards;
+            } catch (Exception e) {
+                throw new DAOException("Failed to map board of user: " + userUUID, e);
             }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             throw new DAOException("Failed to get board of: " + userUUID, e);
         }
     }

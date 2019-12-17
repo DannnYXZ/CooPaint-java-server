@@ -50,7 +50,7 @@ public class FileUploadController extends HttpServlet {
                             String newAvatarName = fileSystemDAO.save(in, STORAGE_PATH_AVATAR);
                             var user = (User) session.getAttribute(SESSION_USER);
                             UserService userService = ServiceFactory.INSTANCE.getUserService();
-                            userService.updateAvatar(user.getUuid(), newAvatarName); // TODO: return updated user
+                            userService.updateAvatar(user.getUuid(), newAvatarName);
                             user.setAvatar(Paths.get(SERVE_PATH_AVATAR, newAvatarName).toString());
                             session.setAttribute(SESSION_USER, user);
                             out.write(new ObjectMapper().writeValueAsString(user));

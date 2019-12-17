@@ -7,8 +7,7 @@ import com.epam.coopaint.domain.Message;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public
-class WSChatServiceImpl extends WSServiceImpl<Chat, Message> {
+public class WSChatServiceImpl extends WSServiceImpl<Chat, Message> {
     public WSChatServiceImpl() {
         roomDaoSupplier = SQLChatDAOImpl::new;
         roomSupplier = Chat::new;

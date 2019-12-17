@@ -11,7 +11,7 @@ import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_HTTP;
 
 public class CDIConfigurator extends ServerEndpointConfig.Configurator {
 
-    public <T> T getEndpointInstance(Class<T> endpointClass) throws InstantiationException {
+    public <T> T getEndpointInstance(Class<T> endpointClass) {
         return CDI.current().select(endpointClass).get();
     }
 
@@ -20,8 +20,5 @@ public class CDIConfigurator extends ServerEndpointConfig.Configurator {
         HttpSession httpSession = (HttpSession) request.getHttpSession();
         ServletContext servletContext = httpSession.getServletContext();
         sec.getUserProperties().put(SESSION_HTTP, httpSession);
-        // User user = (User) httpSession.getAttribute(SESSION_USER);
-        // user.setName("EKEKE");
-        // httpSession.setAttribute(SESSION_USER, user);
     }
 }

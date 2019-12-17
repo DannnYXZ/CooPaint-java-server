@@ -21,7 +21,7 @@ class FileSystemDAOImpl implements FileSystemDAO {
     public String save(InputStream in, String targetDirectoryPath) throws ServiceException {
         // in case of name collisions (probability = 1 / (61^LENGTH))
         for (int i = 0; i < MAX_ATTEMPTS; i++) {
-            String newFileName = Encryptor.getInstance().generateRandomHash(FILE_NAME_LENGTH);
+            String newFileName = Encryptor.generateAlphaNumHash(FILE_NAME_LENGTH);
             Path targetPath = Paths.get(targetDirectoryPath, newFileName);
             try {
                 Files.copy(in, targetPath);

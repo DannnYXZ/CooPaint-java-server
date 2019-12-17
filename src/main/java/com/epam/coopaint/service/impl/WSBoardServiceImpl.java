@@ -7,8 +7,7 @@ import com.epam.coopaint.domain.VShape;
 import javax.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
-public
-class WSBoardServiceImpl extends WSServiceImpl<Board, VShape> {
+public class WSBoardServiceImpl extends WSServiceImpl<Board, VShape> {
     public WSBoardServiceImpl() {
         roomDaoSupplier = SQLBoardDAOImpl::new;
         roomSupplier = Board::new;

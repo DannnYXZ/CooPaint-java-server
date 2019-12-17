@@ -182,7 +182,7 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
     }
 
     @Override
-    public List<R> getUserBoardsMeta(UUID userUUID) throws ServiceException {
+    public List<R> getUserRoomsMeta(UUID userUUID) throws ServiceException {
         RoomDAO<R> roomDAO = roomDaoSupplier.get();
         var transaction = new TransactionManager();
         try {

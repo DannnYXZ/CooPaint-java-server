@@ -19,5 +19,5 @@ public interface WSService<R extends Room<E>, E> {
     void removeSession(Session session);
     Pair<List<E>, Set<Session>> addElements(UUID roomUUID, List<E> elements);
     Pair<R, Set<Session>> update(R updater) throws ServiceException;
-    List<R> getUserBoardsMeta(UUID userUUID) throws ServiceException;
+    List<R> getUserRoomsMeta(UUID userUUID) throws ServiceException;
 }

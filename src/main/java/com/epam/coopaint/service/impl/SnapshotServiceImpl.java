@@ -20,7 +20,7 @@ class SnapshotServiceImpl implements SnapshotService {
     private Map<String, Snapshot> virtualStorage = new ConcurrentHashMap<>(); // <resource, ACL> - offloading DB
 
     public Snapshot createSnapshot(UUID chatUUID, UUID boardUUID, boolean useStorage) throws ServiceException {
-        String link = Encryptor.getInstance().generateRandomHash(SNAPSHOT_LINK_LENGTH);
+        String link = Encryptor.generateAlphaNumHash(SNAPSHOT_LINK_LENGTH);
         var newSnapshot = new Snapshot().setLink(link);
         newSnapshot.getChat().setUuid(chatUUID);
         newSnapshot.getBoard().setUuid(boardUUID);
