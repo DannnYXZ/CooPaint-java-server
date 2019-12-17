@@ -27,9 +27,9 @@ class SnapshotDAOImpl extends GenericDAO implements SnapshotDAO {
             "INNER JOIN board b on snapshot.board_id = b.board_id WHERE snap_link=?";
     private static final String QUERY_READ_SNAPSHOTS_BY_USER_UUID = "SELECT snap_link, c.chat_uuid, b.board_uuid, b.board_name " +
             "FROM snapshot " +
-            "INNER JOIN user u ON u.user_uuid = ? " +
             "INNER JOIN chat c ON snapshot.chat_id = c.chat_id " +
-            "INNER JOIN board b on snapshot.board_id = b.board_id";
+            "INNER JOIN board b on snapshot.board_id = b.board_id " +
+            "INNER JOIN user u ON u.user_uuid = ? AND c.chat_creator = u.user_id AND b.board_creator = u.user_id";
 
     static RsToObject<Snapshot> MAPPER_SNAPSHOT_LINK = (rs, sn) -> sn.setLink(rs.getString(COLUMN_SNAP_LINK));
     static RsToObject<Snapshot> MAPPER_SNAPSHOT_CHAT_UUID = (rs, sn) -> MAPPER_CHAT_UUID.apply(rs, sn.getChat());

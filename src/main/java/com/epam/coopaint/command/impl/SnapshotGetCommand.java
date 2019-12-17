@@ -36,7 +36,7 @@ public class SnapshotGetCommand implements Command {
         var boardService = CDI.current().select(WSBoardServiceImpl.class).get();
         // check session
         Snapshot snap = (Snapshot) wsSession.getUserProperties().get(SESSION_SNAPSHOT);
-        if (snap == null) {
+        if (snap == null || !snap.getLink().equals(snapshotLink)) {
             // checking db
             SnapshotService snapshotService = ServiceFactory.INSTANCE.getSnapshotService();
             try {
