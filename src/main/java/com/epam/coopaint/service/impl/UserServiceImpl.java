@@ -91,7 +91,7 @@ class UserServiceImpl implements UserService {
         try {
             transaction.begin((GenericDAO) userDAO);
             if (updater.getPassword() != null) {
-                Encryptor encryptor = Encryptor.getInstance();
+                var encryptor = new Encryptor();
                 encryptor.generateDidgest(updater.getPassword());
                 updater.setHash(encryptor.getCurrentHash());
                 updater.setSalt(encryptor.getCurrentSalt());

@@ -123,7 +123,7 @@ enum CommandProvider {
 
     private boolean canAccess(List<String> resources, ResourceAction action, User user) throws ServiceException {
         SecurityService securityService = ServiceFactory.INSTANCE.getSecurityService();
-        boolean canAccess = false; // FIXME: strict
+        boolean canAccess = false;
         for (String resource : resources) {
             if (securityService.canAccess(resource, action, user)) {
                 canAccess = true;

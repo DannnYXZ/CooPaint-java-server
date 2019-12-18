@@ -54,7 +54,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
             throw new DAOException("No such user: " + bundle.getEmail());
         }
         User user = users.get(0);
-        Encryptor encryptor = Encryptor.getInstance();
+        var encryptor = new Encryptor();
         encryptor.generateDidgest(bundle.getPassword(), user.getSalt());
         if (Arrays.equals(user.getHash(), encryptor.getCurrentHash())) {
             return user;
@@ -147,7 +147,7 @@ class SQLUserDAOImpl extends GenericDAO implements UserDAO {
         try (PreparedStatement preparedStatement = connection.prepareStatement(QUERY_USER_ADD)) {
             preparedStatement.setString(1, bundle.getEmail());
             preparedStatement.setString(2, bundle.getEmail());
-            Encryptor encryptor = Encryptor.getInstance();
+            var encryptor = new Encryptor();
             encryptor.generateDidgest(bundle.getPassword());
             preparedStatement.setBytes(3, encryptor.getCurrentHash());
             preparedStatement.setBytes(4, encryptor.getCurrentSalt());

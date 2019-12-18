@@ -13,14 +13,13 @@ import java.util.UUID;
 
 public class Encryptor {
     private static Logger logger = LogManager.getLogger();
-    private static Encryptor instance = new Encryptor();
     private static String ALPHA_NUM_STRING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvxyz";
     private SecureRandom random;
     private MessageDigest md;
     private byte[] currentSalt;
     private byte[] currentHash;
 
-    private Encryptor() {
+    public Encryptor() {
         currentSalt = new byte[16];
         random = new SecureRandom();
         try {
@@ -29,10 +28,6 @@ public class Encryptor {
             logger.error("Algorithm not found", e);
             throw new RuntimeException("Sequrity service is down.", e);
         }
-    }
-
-    public static Encryptor getInstance() {
-        return instance;
     }
 
     public void generateDidgest(String password) {

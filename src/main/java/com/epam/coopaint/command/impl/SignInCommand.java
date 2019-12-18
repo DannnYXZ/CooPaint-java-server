@@ -33,7 +33,7 @@ public class SignInCommand implements Command {
                 User user = userService.singIn(signInUpBundle);
                 var httpSession = (HttpSession) session;
                 String jsonUser = mapper.writeValueAsString(user);
-                httpSession.setAttribute(SESSION_USER, user); //FIXME: WS desynchronize
+                httpSession.setAttribute(SESSION_USER, user);
                 return new CommandResult().setBody(jsonUser);
             } catch (ServiceException e) {
                 ObjectNode err = mapper.createObjectNode().put("body", "sign.in.error.no.such");

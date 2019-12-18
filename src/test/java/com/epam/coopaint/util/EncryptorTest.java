@@ -21,7 +21,7 @@ public class EncryptorTest {
 
     @Test(dataProvider = "hash-randomness")
     public void testSamePasswordDifferentHash(String password) {
-        Encryptor encryptor = Encryptor.getInstance();
+        var encryptor = new Encryptor();
         encryptor.generateDidgest(password);
         byte[] hash1 = encryptor.getCurrentHash();
         encryptor.generateDidgest(password);

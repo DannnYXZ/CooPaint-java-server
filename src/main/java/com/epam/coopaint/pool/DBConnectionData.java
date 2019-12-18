@@ -21,7 +21,7 @@ class DBConnectionData {
             DB_PASSWORD = props.getProperty("db.password");
             DB_CONNECTIONS_MAX = Integer.parseInt(props.getProperty("db.connections.max"));
             DB_CONNECTION_CHECK_TIME_S = Integer.parseInt(props.getProperty("db.connection.check.time.sec"));
-        } catch (Exception e) { // | FIXME
+        } catch (NumberFormatException e) {
             throw new RuntimeException("Failed to initialize db connection data", e);
         }
     }
