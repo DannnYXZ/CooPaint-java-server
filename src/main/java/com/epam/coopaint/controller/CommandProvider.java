@@ -28,7 +28,9 @@ import static com.epam.coopaint.domain.ResourceAction.*;
 import static java.text.MessageFormat.format;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
-
+/**
+ * Performs request route matching system and access control via SecurityService
+ */
 enum CommandProvider {
     INSTANCE;
 

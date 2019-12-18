@@ -23,10 +23,4 @@ public enum DAOFactory {
     public FileSystemDAO createFileSystemDAO() {
         return new FileSystemDAOImpl();
     }
-
-    public <R extends Room<E>, E> RoomDAO<R> createRoomDao(Class<E> daoClass) {
-        Supplier<RoomDAO> s = SQLBoardDAOImpl::new;
-        // Supplier<R> supplier = daoClass;
-        return s.get();
-    }
 }

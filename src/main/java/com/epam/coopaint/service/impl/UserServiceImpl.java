@@ -39,7 +39,7 @@ class UserServiceImpl implements UserService {
             transaction.begin((GenericDAO) userDAO);
             User user = userDAO.signIn(bundle);
             transaction.commit();
-            user.getGroups().add(GROUP_USER); // TODO: load groups from db
+            user.getGroups().add(GROUP_USER);
             wireAvatarServePath(user);
             return user;
         } catch (DAOException e) {
@@ -98,7 +98,7 @@ class UserServiceImpl implements UserService {
             }
             userDAO.update(updater);
             User updatedUser = userDAO.getUser(updater.getUuid());
-            updatedUser.getGroups().add(GROUP_USER); // TODO: load groups from db
+            updatedUser.getGroups().add(GROUP_USER);
             transaction.commit();
             wireAvatarServePath(updatedUser);
             return updatedUser;

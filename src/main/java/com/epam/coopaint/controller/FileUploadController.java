@@ -26,6 +26,10 @@ import static com.epam.coopaint.dao.impl.LocationData.STORAGE_PATH_AVATAR;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
+
+/**
+ * State dependent uploader. Type of upload is set by commands in user session
+ */
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 2, // 2MB
         maxFileSize = 1024 * 1024 * 10,      // 10MB
         maxRequestSize = 1024 * 1024 * 50)   // 50MB
@@ -34,8 +38,7 @@ public class FileUploadController extends HttpServlet {
     private static Logger logger = LogManager.getLogger();
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // state dependent uploader
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)  {
         // upload type controlled by ACL in dispatcher
         try (Writer out = response.getWriter()) {
             HttpSession session = request.getSession(false);
@@ -63,7 +66,7 @@ public class FileUploadController extends HttpServlet {
                         out.write(new ObjectMapper().writeValueAsString(err));
                     }
 //                    if (uploadType == UploadType.BOARD) {
-//                        String filePath = fileService.save(part.getInputStream(), UPLOAD_PATH_BOARD);
+//                        String filePath = fileSystemDAO.save(part.getInputStream(), UPLOAD_PATH_BOARD);
 //                    }
                 }
             }
