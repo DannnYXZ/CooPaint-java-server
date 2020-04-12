@@ -1,52 +1,102 @@
 package com.epam.coopaint.service.impl;
 
+import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
+import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
+import static com.epam.coopaint.domain.ACLData.RESOURCE_ANY;
+import static com.epam.coopaint.util.StringUtil.standardUUID;
+
 import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.SecurityDAO;
+import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.impl.TransactionManager;
 import com.epam.coopaint.domain.ACL;
+import com.epam.coopaint.domain.ExtendedAclDTO;
 import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.domain.User;
+import com.epam.coopaint.domain.UserResourceActions;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
-import static com.epam.coopaint.service.impl.SecurityData.ACL_USE_CACHING;
-
 class SecurityServiceImpl implements SecurityService {
     private static Logger logger = LogManager.getLogger();
-    private Map<String, ACL> cacheACL = new ConcurrentHashMap<>(); // <resource, ACL> - offloading DB
 
-    private ACL getACL(String resource) throws DAOException {
+    public ACL readAcl(String resource) throws ServiceException {
         SecurityDAO securityDAO = DAOFactory.INSTANCE.createSecurityDAO();
         var transaction = new TransactionManager();
         try {
             transaction.begin((GenericDAO) securityDAO);
-            if (ACL_USE_CACHING) {
-                ACL acl = this.cacheACL.get(resource);
-                if (acl == null) {
-                    acl = securityDAO.getACL(resource);
-                    cacheACL.put(resource, acl);
-                }
-                return acl;
-            } else {
-                ACL acl = securityDAO.getACL(resource);
-                return acl;
-            }
+            ACL acl = securityDAO.getACL(resource);
+            return acl;
         } catch (DAOException exception) {
             transaction.rollback();
-            throw exception;
+            throw new ServiceException();
         } finally {
             transaction.end();
         }
+    }
+
+    @Override
+    public ExtendedAclDTO readExtendedAcl(String resourceUUID) throws ServiceException {
+        UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
+        var transaction = new TransactionManager();
+        try {
+            transaction.begin((GenericDAO) userDAO);
+            ACL usersACL = readAcl(resourceUUID);
+            ExtendedAclDTO extendedACL = new ExtendedAclDTO().setUsers(new ArrayList<>()).setGuests(new HashSet<>());
+            for (var entry : usersACL.getAcl().entrySet()) {
+                String actor = entry.getKey();
+                if (GROUP_GUEST.equals(actor)){
+                    extendedACL.setGuests(entry.getValue());
+                } else {
+                  User user = userDAO.getUser(UUID.fromString(standardUUID(actor)));
+                  Set<ResourceAction> availableActions = entry.getValue();
+                  extendedACL.getUsers().add(new UserResourceActions(user, availableActions));
+                }
+            }
+            return extendedACL;
+        } catch (DAOException e) {
+            transaction.rollback();
+            e.printStackTrace();
+            throw new ServiceException();
+        }
+        finally{
+            transaction.end();
+        }
+    }
+
+    @Override
+    public void updateAcl(String resourceUUID, ACL acl) {
+        SecurityDAO securityDAO = DAOFactory.INSTANCE.createSecurityDAO();
+        var transaction = new TransactionManager();
+        try {
+            transaction.begin((GenericDAO) securityDAO);
+            for(var entry: acl.getAcl().entrySet()){
+                securityDAO.updateACL(resourceUUID, entry.getKey(), entry.getValue());
+            }
+        } catch (Exception e){
+            transaction.rollback();
+        } finally{
+            transaction.end();
+        }
+    }
+
+    @Override
+    public ExtendedAclDTO updateAllAcl(ACL acl) {
+        return null;
+    }
+
+    @Override
+    public ExtendedAclDTO deleteAcl(String resourceUUID, String actorUUID) {
+        return null;
     }
 
     private boolean canAccess(ACL resourceACL, Set<String> actorGroups, ResourceAction action) {
@@ -62,16 +112,17 @@ class SecurityServiceImpl implements SecurityService {
 
     @Override
     public boolean canAccess(String resource, ResourceAction action, User actor) throws ServiceException {
-        try {
-            ACL resourceACL = getACL(resource);
-            // determine common groups
-            Set<String> groupsIntersection = new HashSet<>(actor.getGroups());
-            groupsIntersection.retainAll(resourceACL.getGroups());
-            groupsIntersection.add(GROUP_ALL);
-            boolean canAccess = canAccess(resourceACL, groupsIntersection, action);
-            return canAccess;
-        } catch (DAOException e) {
-            throw new ServiceException(e);
-        }
+        ACL resourceACL = readAcl(resource);
+        // determine common groups
+        Set<String> groupsIntersection = new HashSet<>(actor.getGroups());
+        groupsIntersection.retainAll(resourceACL.getGroups());
+        groupsIntersection.add(GROUP_ALL);
+        boolean canAccess = canAccess(resourceACL, groupsIntersection, action);
+        return canAccess;
+    }
+
+    @Override
+    public ExtendedAclDTO createAcl(String userEmail, ACL acl) {
+        return null;
     }
 }

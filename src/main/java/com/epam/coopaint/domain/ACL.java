@@ -6,14 +6,15 @@ import java.util.Map;
 import java.util.Set;
 
 public class ACL {
+    // actor -> actions
     private Map<String, Set<ResourceAction>> acl = new HashMap<>();
 
     public Map<String, Set<ResourceAction>> getAcl() {
         return acl;
     }
 
-    public void addAction(String group, ResourceAction action) {
-        Set<ResourceAction> actions = acl.computeIfAbsent(group, k -> new HashSet<>());
+    public void addAction(String actor, ResourceAction action) {
+        Set<ResourceAction> actions = acl.computeIfAbsent(actor, k -> new HashSet<>());
         actions.add(action);
     }
 

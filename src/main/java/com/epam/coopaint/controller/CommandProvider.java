@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
-import static com.epam.coopaint.domain.ACLData.RESOURCE_ALL;
+import static com.epam.coopaint.domain.ACLData.RESOURCE_ANY;
 import static com.epam.coopaint.domain.ResourceAction.*;
 import static java.text.MessageFormat.format;
 import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
@@ -37,8 +37,8 @@ enum CommandProvider {
     public enum Method {POST, DELETE, PUT, GET}
 
     private static Logger logger = LogManager.getLogger();
-    private static final String UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
-    private static final String SNAPSHOT = "[0-9a-zA-Z]*";
+    private static final String REGEX_UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
+    private static final String REGEX_SNAPSHOT = "[0-9a-zA-Z]*";
     private final List<CommandDescriptor> commandDescriptors = new ArrayList<>();
 
     private static class CommandDescriptor {
@@ -96,29 +96,35 @@ enum CommandProvider {
         commandDescriptors.add(new CommandDescriptor().method(Method.PUT)
                 .pattern("/user/update").action(UPDATE_USER).command(new UserUpdateCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET)
-                .pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(READ_CHAT)
+                .pattern(format("/chat/({0})/messages", REGEX_UUID)).indices(List.of(0)).action(READ_CHAT)
                 .command(new ChatReadHistoryCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST)
-                .pattern(format("/chat/({0})/messages", UUID)).indices(List.of(0)).action(UPDATE_CHAT)
+                .pattern(format("/chat/({0})/messages", REGEX_UUID)).indices(List.of(0)).action(UPDATE_CHAT)
                 .command(new ChatAcceptMessagesCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET)
-                .pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(READ_BOARD)
+                .pattern(format("/board/({0})", REGEX_UUID)).indices(List.of(0)).action(READ_BOARD)
                 .command(new BoardReadCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST)
-                .pattern(format("/board/({0})/elements", UUID)).indices(List.of(0)).action(UPDATE_BOARD)
+                .pattern(format("/board/({0})/elements", REGEX_UUID)).indices(List.of(0)).action(UPDATE_BOARD)
                 .command(new BoardAcceptElementCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.PUT)
-                .pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(UPDATE_BOARD)
+                .pattern(format("/board/({0})", REGEX_UUID)).indices(List.of(0)).action(UPDATE_BOARD)
                 .command(new BoardUpdateCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.DELETE)
-                .pattern(format("/board/({0})", UUID)).indices(List.of(0)).action(DELETE_BOARD)
+                .pattern(format("/board/({0})", REGEX_UUID)).indices(List.of(0)).action(DELETE_BOARD)
                 .command(new BoardDeleteCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET)
-                .pattern(format("/snapshot/all", UUID)).action(READ_SITE)
+                .pattern(format("/snapshot/all", REGEX_UUID)).action(READ_SITE)
                 .command(new SnapshotReadAllCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET)
-                .pattern(format("/snapshot/({0})", SNAPSHOT)).action(GET_SNAPSHOT)
-                .command(new SnapshotGetCommand()));
+            .pattern(format("/snapshot/({0})", REGEX_SNAPSHOT)).action(GET_SNAPSHOT)
+            .command(new SnapshotGetCommand()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.GET)
+            .pattern(format("/access/({0})", REGEX_UUID)).action(READ_ACL)
+            .command(new AclExtendedReadCommand()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.PUT)
+            .pattern(format("/access/({0})", REGEX_UUID)).action(READ_ACL)
+            .command(new AclUpdateCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST)
                 .pattern(".*").command(new WrongRequestCommand()));
     }
@@ -151,7 +157,7 @@ enum CommandProvider {
         List<String> props = StringUtil.parseGroups(url, matchedDescriptor.routePattern);
         User user = (User) identityWard.getAttribute(SESSION_USER);
         List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
-        urlResources.add(RESOURCE_ALL);
+        urlResources.add(RESOURCE_ANY);
         try {
             CommandResult result;
             if (canAccess(urlResources, matchedDescriptor.action, user)) {

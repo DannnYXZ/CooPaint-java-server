@@ -47,7 +47,6 @@ public final class ConnectionPoolImpl implements ConnectionPool {
         lock = new ReentrantLock();
     }
 
-
     @Override
     public Connection takeConnection() throws ConnectionPoolException {
         try {

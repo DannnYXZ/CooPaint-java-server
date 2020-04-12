@@ -10,5 +10,9 @@ public enum ResourceAction {
     DELETE_BOARD,
     UPLOAD_FILE,
     UPDATE_USER,
-    GET_SNAPSHOT
+    GET_SNAPSHOT,
+    CREATE_ACL,
+    READ_ACL,
+    UPDATE_ACL,
+    DELETE_ACL
 }

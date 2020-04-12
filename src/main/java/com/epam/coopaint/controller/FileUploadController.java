@@ -46,7 +46,7 @@ public class FileUploadController extends HttpServlet {
                 response.setStatus(SC_UNAUTHORIZED);
             } else {
                 var uploadType = (FileUploadType) session.getAttribute(SESSION_UPLOAD_TYPE);
-                FileSystemDAO fileSystemDAO = DAOFactory.INSTANCE.createFileSystemDAO();
+                var fileSystemDAO = DAOFactory.INSTANCE.createFileSystemDAO();
                 for (Part part : request.getParts()) {
                     try (InputStream in = part.getInputStream()) {
                         if (uploadType == FileUploadType.AVATAR) {

@@ -27,6 +27,7 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
     static RsToObject<Chat> MAPPER_CHAT_ID = (s, c) -> c.setId(s.getLong(COLUMN_CHAT_ID));
     static RsToObject<Chat> MAPPER_CHAT_UUID = (s, c) -> c.setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_CHAT_UUID)));
     static RsToObject<Chat> MAPPER_CHAT_CREATOR_UUID = (s, c) -> c.setCreator(new User().setUuid(Encryptor.bytesToUuid(s.getBytes(COLUMN_USER_UUID))));
+    static RsToObject<Chat> MAPPER_CHAT_ELEMENTS = (s, c) -> c.setElements(new ArrayList<>());
 
     @Override
     public Chat createRoom(Chat Chat) throws DAOException {
@@ -56,7 +57,8 @@ public class SQLChatDAOImpl extends GenericDAO implements RoomDAO<Chat> {
                 RsToObjectListMapper<Chat> mapper = new RsToObjectListMapper<>(Arrays.asList(
                         MAPPER_CHAT_ID,
                         MAPPER_CHAT_UUID,
-                        MAPPER_CHAT_CREATOR_UUID
+                        MAPPER_CHAT_CREATOR_UUID,
+                        MAPPER_CHAT_ELEMENTS
                 ));
                 List<Chat> chats = mapper.mapToList(result, Chat::new);
                 if (chats.isEmpty()) {
