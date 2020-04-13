@@ -37,7 +37,7 @@ enum CommandProvider {
     public enum Method {POST, DELETE, PUT, GET}
 
     private static Logger logger = LogManager.getLogger();
-    private static final String REGEX_UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){4}[a-f0-9]{8}";
+    private static final String REGEX_UUID = "[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}";
     private static final String REGEX_SNAPSHOT = "[0-9a-zA-Z]*";
     private final List<CommandDescriptor> commandDescriptors = new ArrayList<>();
 
@@ -120,11 +120,14 @@ enum CommandProvider {
             .pattern(format("/snapshot/({0})", REGEX_SNAPSHOT)).action(GET_SNAPSHOT)
             .command(new SnapshotGetCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.GET)
-            .pattern(format("/access/({0})", REGEX_UUID)).action(READ_ACL)
+            .pattern(format("/access/({0})", REGEX_UUID)).indices(List.of(0)).action(READ_ACL)
             .command(new AclExtendedReadCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.PUT)
-            .pattern(format("/access/({0})", REGEX_UUID)).action(READ_ACL)
+            .pattern(format("/access/({0})", REGEX_UUID)).indices(List.of(0)).action(UPDATE_ACL)
             .command(new AclUpdateCommand()));
+        commandDescriptors.add(new CommandDescriptor().method(Method.POST)
+            .pattern(format("/access/({0})", REGEX_UUID)).indices(List.of(0)).action(CREATE_ACL)
+            .command(new AclAddParticipantByEmailCommand()));
         commandDescriptors.add(new CommandDescriptor().method(Method.POST)
                 .pattern(".*").command(new WrongRequestCommand()));
     }

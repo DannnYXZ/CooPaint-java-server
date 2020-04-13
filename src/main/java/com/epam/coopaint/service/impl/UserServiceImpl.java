@@ -25,6 +25,7 @@ import java.util.UUID;
 import static com.epam.coopaint.dao.impl.LocationData.SERVE_PATH_AVATAR;
 import static com.epam.coopaint.dao.impl.LocationData.STORAGE_PATH_AVATAR;
 import static com.epam.coopaint.domain.ACLData.*;
+import static com.epam.coopaint.util.StringUtil.compactUUID;
 
 class UserServiceImpl implements UserService {
     private static Logger logger = LogManager.getLogger();
@@ -40,6 +41,7 @@ class UserServiceImpl implements UserService {
             User user = userDAO.signIn(bundle);
             transaction.commit();
             user.getGroups().add(GROUP_USER);
+            user.getGroups().add(compactUUID(user.getUuid().toString()));
             wireAvatarServePath(user);
             return user;
         } catch (DAOException e) {
@@ -99,6 +101,7 @@ class UserServiceImpl implements UserService {
             userDAO.update(updater);
             User updatedUser = userDAO.getUser(updater.getUuid());
             updatedUser.getGroups().add(GROUP_USER);
+            updatedUser.getGroups().add(compactUUID(updatedUser.getUuid().toString()));
             transaction.commit();
             wireAvatarServePath(updatedUser);
             return updatedUser;
@@ -123,6 +126,7 @@ class UserServiceImpl implements UserService {
                 if (users.size() != 0) {
                     User user = users.get(0);
                     user.getGroups().add(GROUP_USER);
+                    user.getGroups().add(compactUUID(user.getUuid().toString()));
                     // notify user
                     MailSender sender = MailSender.getInstance();
                     sender.sendMail(MESSAGE_WELCOME, user.getEmail());

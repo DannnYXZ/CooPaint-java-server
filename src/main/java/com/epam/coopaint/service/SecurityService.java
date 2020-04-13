@@ -5,11 +5,12 @@ import com.epam.coopaint.domain.ExtendedAclDTO;
 import com.epam.coopaint.domain.ResourceAction;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.ServiceException;
+import java.util.Set;
 
 public interface SecurityService {
     boolean canAccess(String resource, ResourceAction action, User actor) throws ServiceException;
 
-    ExtendedAclDTO createAcl(String userEmail, ACL acl);
+    void createAcl(String userEmail, String resourceUUID, Set<ResourceAction> actions);
 
     ACL readAcl(String resourceUUID) throws ServiceException;
 

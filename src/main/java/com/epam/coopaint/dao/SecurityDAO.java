@@ -6,6 +6,7 @@ import com.epam.coopaint.exception.DAOException;
 import java.util.Set;
 
 public interface SecurityDAO {
-    ACL getACL(String resource) throws DAOException;
+    void createACL(String resourceUUID, String actorUUID, Set<ResourceAction> actions) throws DAOException;
+    ACL getACL(String resourceUUID) throws DAOException;
     void updateACL(String resourceUUID, String actorUUID, Set<ResourceAction> actions) throws DAOException;
 }

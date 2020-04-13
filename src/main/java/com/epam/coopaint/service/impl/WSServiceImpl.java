@@ -1,7 +1,16 @@
 package com.epam.coopaint.service.impl;
 
+import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
+import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
+import static com.epam.coopaint.domain.ResourceAction.READ_BOARD;
+import static com.epam.coopaint.domain.ResourceAction.READ_CHAT;
+import static com.epam.coopaint.domain.ResourceAction.UPDATE_BOARD;
+import static com.epam.coopaint.domain.ResourceAction.UPDATE_CHAT;
+import static com.epam.coopaint.domain.ResourceAction.values;
+
 import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.RoomDAO;
+import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.impl.TransactionManager;
@@ -11,12 +20,18 @@ import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.WSService;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Supplier;
+import javax.websocket.Session;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.websocket.Session;
-import java.util.*;
-import java.util.function.Supplier;
 
 class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
     private static Logger logger = LogManager.getLogger();
@@ -27,7 +42,7 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
 
     // base method - must be called first
     @Override
-    public Pair<UUID, Set<Session>> connectTo(User user, String roomUUID, Session session) throws ServiceException {
+    public Pair<UUID, Set<Session>> connectTo(User authorizedUser, String roomUUID, Session session) throws ServiceException {
         UUID uuid;
         try {
             uuid = UUID.fromString(roomUUID);
@@ -38,10 +53,11 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
         if (!rooms.containsKey(uuid)) {
             // check db
             RoomDAO<R> roomDAO = roomDaoSupplier.get();
+            SecurityDAO securityDAO = DAOFactory.INSTANCE.createSecurityDAO();
             UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
             var transaction = new TransactionManager();
             try {
-                transaction.begin((GenericDAO) roomDAO, (GenericDAO) userDAO);
+                transaction.begin((GenericDAO) roomDAO, (GenericDAO) userDAO, (GenericDAO) securityDAO);
                 R room = roomDAO.readRoom(uuid);
                 User creator = userDAO.getUser(room.getCreator().getUuid());
                 room.setCreator(creator);
@@ -52,15 +68,17 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
                 // no board -> create
                 try {
                     R newRoom = roomSupplier.get();
-                    newRoom.setCreator(user)
-                            .setUuid(UUID.randomUUID())
-                            .setElements(new ArrayList<>());
-                    if (user.isAuth()) {
+                    newRoom.setCreator(authorizedUser).setUuid(UUID.randomUUID()).setElements(new ArrayList<>());
+                    uuid = newRoom.getUuid();
+                    if (authorizedUser.isAuth()) {
                         // storing only registered users
                         roomDAO.createRoom(newRoom);
+                        securityDAO.createACL(uuid.toString(), authorizedUser.getUuid().toString(),
+                            new HashSet<>(Arrays.asList(values())));
+                        securityDAO.createACL(uuid.toString(), GROUP_ALL,
+                            Set.of(READ_BOARD, UPDATE_BOARD, READ_CHAT, UPDATE_CHAT));
                         transaction.commit();
                     }
-                    uuid = newRoom.getUuid();
                     rooms.put(uuid, newRoom); // put to cache
                 } catch (DAOException ex) {
                     transaction.rollback();

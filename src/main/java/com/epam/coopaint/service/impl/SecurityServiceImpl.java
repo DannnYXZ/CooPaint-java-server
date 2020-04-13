@@ -1,5 +1,6 @@
 package com.epam.coopaint.service.impl;
 
+import static com.epam.coopaint.dao.impl.LocationData.SERVE_PATH_AVATAR;
 import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
 import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
 import static com.epam.coopaint.domain.ACLData.RESOURCE_ANY;
@@ -18,6 +19,7 @@ import com.epam.coopaint.domain.UserResourceActions;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -54,10 +56,11 @@ class SecurityServiceImpl implements SecurityService {
             ExtendedAclDTO extendedACL = new ExtendedAclDTO().setUsers(new ArrayList<>()).setGuests(new HashSet<>());
             for (var entry : usersACL.getAcl().entrySet()) {
                 String actor = entry.getKey();
-                if (GROUP_GUEST.equals(actor)){
+                if (GROUP_GUEST.equals(actor) || GROUP_ALL.equals(actor)){
                     extendedACL.setGuests(entry.getValue());
                 } else {
                   User user = userDAO.getUser(UUID.fromString(standardUUID(actor)));
+                  user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
                   Set<ResourceAction> availableActions = entry.getValue();
                   extendedACL.getUsers().add(new UserResourceActions(user, availableActions));
                 }
@@ -122,7 +125,18 @@ class SecurityServiceImpl implements SecurityService {
     }
 
     @Override
-    public ExtendedAclDTO createAcl(String userEmail, ACL acl) {
-        return null;
+    public void createAcl(String userEmail, String resourceUUID, Set<ResourceAction> actions) {
+        UserDAO userDAO = DAOFactory.INSTANCE.createUserDAO();
+        SecurityDAO securityDAO = DAOFactory.INSTANCE.createSecurityDAO();
+        var transaction = new TransactionManager();
+        try {
+            transaction.begin((GenericDAO) userDAO, (GenericDAO) securityDAO);
+            User user = userDAO.getUsers(userEmail).get(0);
+            securityDAO.createACL(resourceUUID, user.getUuid().toString(), actions);
+        } catch (Exception e) {
+            transaction.rollback();
+        } finally {
+            transaction.end();
+        }
     }
 }
