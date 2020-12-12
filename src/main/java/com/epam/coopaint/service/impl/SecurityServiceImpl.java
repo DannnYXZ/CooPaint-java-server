@@ -1,32 +1,24 @@
 package com.epam.coopaint.service.impl;
 
-import static com.epam.coopaint.dao.impl.LocationData.SERVE_PATH_AVATAR;
-import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
-import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
-import static com.epam.coopaint.domain.ACLData.RESOURCE_ANY;
-import static com.epam.coopaint.util.StringUtil.standardUUID;
-
 import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.SecurityDAO;
 import com.epam.coopaint.dao.UserDAO;
 import com.epam.coopaint.dao.impl.DAOFactory;
 import com.epam.coopaint.dao.impl.TransactionManager;
-import com.epam.coopaint.domain.ACL;
-import com.epam.coopaint.domain.ExtendedAclDTO;
-import com.epam.coopaint.domain.ResourceAction;
-import com.epam.coopaint.domain.User;
-import com.epam.coopaint.domain.UserResourceActions;
+import com.epam.coopaint.domain.*;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
 import com.epam.coopaint.service.SecurityService;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.nio.file.Paths;
+import java.util.*;
+
+import static com.epam.coopaint.dao.impl.LocationData.SERVE_PATH_AVATAR;
+import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
+import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
+import static com.epam.coopaint.util.StringUtil.standardUUID;
 
 class SecurityServiceImpl implements SecurityService {
     private static Logger logger = LogManager.getLogger();
@@ -56,13 +48,13 @@ class SecurityServiceImpl implements SecurityService {
             ExtendedAclDTO extendedACL = new ExtendedAclDTO().setUsers(new ArrayList<>()).setGuests(new HashSet<>());
             for (var entry : usersACL.getAcl().entrySet()) {
                 String actor = entry.getKey();
-                if (GROUP_GUEST.equals(actor) || GROUP_ALL.equals(actor)){
+                if (GROUP_GUEST.equals(actor) || GROUP_ALL.equals(actor)) {
                     extendedACL.setGuests(entry.getValue());
                 } else {
-                  User user = userDAO.getUser(UUID.fromString(standardUUID(actor)));
-                  user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
-                  Set<ResourceAction> availableActions = entry.getValue();
-                  extendedACL.getUsers().add(new UserResourceActions(user, availableActions));
+                    User user = userDAO.getUser(UUID.fromString(standardUUID(actor)));
+                    user.setAvatar(Paths.get(SERVE_PATH_AVATAR, user.getAvatar()).toString());
+                    Set<ResourceAction> availableActions = entry.getValue();
+                    extendedACL.getUsers().add(new UserResourceActions(user, availableActions));
                 }
             }
             return extendedACL;
@@ -70,8 +62,7 @@ class SecurityServiceImpl implements SecurityService {
             transaction.rollback();
             e.printStackTrace();
             throw new ServiceException();
-        }
-        finally{
+        } finally {
             transaction.end();
         }
     }
@@ -82,12 +73,12 @@ class SecurityServiceImpl implements SecurityService {
         var transaction = new TransactionManager();
         try {
             transaction.begin((GenericDAO) securityDAO);
-            for(var entry: acl.getAcl().entrySet()){
+            for (var entry : acl.getAcl().entrySet()) {
                 securityDAO.updateACL(resourceUUID, entry.getKey(), entry.getValue());
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             transaction.rollback();
-        } finally{
+        } finally {
             transaction.end();
         }
     }
@@ -121,6 +112,19 @@ class SecurityServiceImpl implements SecurityService {
         groupsIntersection.retainAll(resourceACL.getGroups());
         groupsIntersection.add(GROUP_ALL);
         boolean canAccess = canAccess(resourceACL, groupsIntersection, action);
+        return canAccess;
+    }
+
+    @Override
+    public boolean canAccess(List<String> resources, ResourceAction action, User user)
+            throws ServiceException {
+        boolean canAccess = false;
+        for (String resource : resources) {
+            if (this.canAccess(resource, action, user)) {
+                canAccess = true;
+                break;
+            }
+        }
         return canAccess;
     }
 

@@ -1,13 +1,5 @@
 package com.epam.coopaint.service.impl;
 
-import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
-import static com.epam.coopaint.domain.ACLData.GROUP_GUEST;
-import static com.epam.coopaint.domain.ResourceAction.READ_BOARD;
-import static com.epam.coopaint.domain.ResourceAction.READ_CHAT;
-import static com.epam.coopaint.domain.ResourceAction.UPDATE_BOARD;
-import static com.epam.coopaint.domain.ResourceAction.UPDATE_CHAT;
-import static com.epam.coopaint.domain.ResourceAction.values;
-
 import com.epam.coopaint.dao.GenericDAO;
 import com.epam.coopaint.dao.RoomDAO;
 import com.epam.coopaint.dao.SecurityDAO;
@@ -19,24 +11,26 @@ import com.epam.coopaint.domain.Room;
 import com.epam.coopaint.domain.User;
 import com.epam.coopaint.exception.DAOException;
 import com.epam.coopaint.exception.ServiceException;
+import com.epam.coopaint.service.SecurityService;
 import com.epam.coopaint.service.WSService;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Supplier;
-import javax.websocket.Session;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.servlet.http.HttpSession;
+import javax.websocket.Session;
+import java.util.*;
+import java.util.function.Supplier;
+
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_HTTP;
+import static com.epam.coopaint.command.impl.SessionAttribute.SESSION_USER;
+import static com.epam.coopaint.domain.ACLData.GROUP_ALL;
+import static com.epam.coopaint.domain.ResourceAction.*;
 
 class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
     private static Logger logger = LogManager.getLogger();
     private final Map<UUID, R> rooms = new HashMap<>(); // <chat, messages> ~ persistent
     private final Map<UUID, Set<Session>> sessions = new HashMap<>(); // <chat, connections> ~ dynamic
+    SecurityService securityService = ServiceFactory.INSTANCE.getSecurityService();
     Supplier<R> roomSupplier;
     Supplier<RoomDAO<R>> roomDaoSupplier;
 
@@ -74,9 +68,9 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
                         // storing only registered users
                         roomDAO.createRoom(newRoom);
                         securityDAO.createACL(uuid.toString(), authorizedUser.getUuid().toString(),
-                            new HashSet<>(Arrays.asList(values())));
+                                new HashSet<>(Arrays.asList(values())));
                         securityDAO.createACL(uuid.toString(), GROUP_ALL,
-                            Set.of(READ_BOARD, UPDATE_BOARD, READ_CHAT, UPDATE_CHAT));
+                                Set.of(READ_BOARD, UPDATE_BOARD, READ_CHAT, UPDATE_CHAT));
                         transaction.commit();
                     }
                     rooms.put(uuid, newRoom); // put to cache
@@ -90,6 +84,7 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
         }
         Set<Session> sessions = this.sessions.computeIfAbsent(uuid, x -> new HashSet<>());
         sessions.add(session);
+        disconnectUsersWhoCannotReadRoom(uuid);
         return new Pair<>(uuid, sessions);
     }
 
@@ -169,6 +164,7 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
     public Pair<List<E>, Set<Session>> addElements(UUID roomUUID, List<E> elements) {
         rooms.get(roomUUID).getElements().addAll(elements);
         Set<Session> sessions = this.sessions.get(roomUUID);
+        disconnectUsersWhoCannotReadRoom(roomUUID);
         return new Pair<>(elements, sessions);
     }
 
@@ -196,6 +192,7 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
                 transaction.end();
             }
         }
+        disconnectUsersWhoCannotReadRoom(room.getUuid());
         return new Pair<>(room, receivers);
     }
 
@@ -211,6 +208,26 @@ class WSServiceImpl<R extends Room<E>, E> implements WSService<R, E> {
             throw new ServiceException("Failed to get user boards.", e);
         } finally {
             transaction.end();
+        }
+    }
+
+    public void disconnectUsersWhoCannotReadRoom(UUID roomUUID) {
+        Set<Session> sessions = this.sessions.get(roomUUID);
+        Set<Session> sessionsToRevoke = new HashSet<>();
+        if (sessions != null) {
+            sessions.forEach(session -> {
+                HttpSession httpSession = (HttpSession) session.getUserProperties().get(SESSION_HTTP);
+                User roomUser = (User) httpSession.getAttribute(SESSION_USER);
+                try {
+                    if (securityService.canAccess(roomUUID.toString(), READ_BOARD, roomUser) ||
+                            securityService.canAccess(roomUUID.toString(), READ_CHAT, roomUser)) {
+                        sessionsToRevoke.add(session);
+                    }
+                } catch (ServiceException e) {
+                    e.printStackTrace();
+                }
+            });
+            sessions.retainAll(sessionsToRevoke);
         }
     }
 }

@@ -16,14 +16,14 @@ class RsToObjectListMapper<T> {
     }
 
     List<T> mapToList(ResultSet resultSet, Supplier<T> supplier) throws Exception {
-        List<T> boards = new ArrayList<>();
+        List<T> entities = new ArrayList<>();
         while (resultSet.next()) {
             var target = supplier.get();
             for (var column : mappings) {
                 column.apply(resultSet, target);
             }
-            boards.add(target);
+            entities.add(target);
         }
-        return boards;
+        return entities;
     }
 }

@@ -132,18 +132,6 @@ enum CommandProvider {
                 .pattern(".*").command(new WrongRequestCommand()));
     }
 
-    private boolean canAccess(List<String> resources, ResourceAction action, User user) throws ServiceException {
-        SecurityService securityService = ServiceFactory.INSTANCE.getSecurityService();
-        boolean canAccess = false;
-        for (String resource : resources) {
-            if (securityService.canAccess(resource, action, user)) {
-                canAccess = true;
-                break;
-            }
-        }
-        return canAccess;
-    }
-
     private CommandDescriptor getMatchingDescriptor(Method method, String url) {
         CommandDescriptor matchedDescriptor = new CommandDescriptor();
         for (CommandDescriptor descriptor : commandDescriptors) {
@@ -161,9 +149,11 @@ enum CommandProvider {
         User user = (User) identityWard.getAttribute(SESSION_USER);
         List<String> urlResources = matchedDescriptor.argumentIndices.stream().map(props::get).collect(Collectors.toList());
         urlResources.add(RESOURCE_ANY);
+
+        SecurityService securityService = ServiceFactory.INSTANCE.getSecurityService();
         try {
             CommandResult result;
-            if (canAccess(urlResources, matchedDescriptor.action, user)) {
+            if (securityService.canAccess(urlResources, matchedDescriptor.action, user)) {
                 result = matchedDescriptor.command.execute(props, req, session);
             } else {
                 result = new CommandResult().setCode(HttpServletResponse.SC_FORBIDDEN);
